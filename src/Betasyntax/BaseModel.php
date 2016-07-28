@@ -99,7 +99,7 @@ class BaseModel
   {
     if (!$config)
       $config = new DatabaseConfig();
-    self::$db = \Lib\Db\DbFactory::connect($config);
+    self::$db = \Betasyntax\Db\DbFactory::connect($config);
     restore_exception_handler();
     self::$info = (object) array( self::$arguments);
     unset(self::$info->password);
@@ -452,7 +452,7 @@ class BaseModel
       $val = $v->Field;
       $type = $v->Type;
       $column_quote = ['tinyint','smallint','mediumint','int','bigint','float','double','decimal'];
-      if (!app()->util::strpos_array($type,$column_quote))
+      if (!self::strpos_array($type,$column_quote))
         $qt='"';
       $sql_set_string .= $val.'='.$qt.addslashes($data->$val).$qt;
       $x++;
@@ -482,4 +482,21 @@ class BaseModel
     }
   }
 
+  private static function strpos_array($haystack, $needles) 
+  {
+    if (is_array($needles)) {
+      foreach ($needles as $str) {
+        if (is_array($str)) {
+          $pos = strpos_array($haystack, $str);
+        } else {
+          $pos = strpos($haystack, $str);
+        }
+        if ($pos !== FALSE) {
+          return TRUE;
+        }
+      }
+    } else {
+      return strpos($haystack, $needles);
+    }
+  }
 } 
