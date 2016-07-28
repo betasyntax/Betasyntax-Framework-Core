@@ -245,7 +245,7 @@ class Router {
 				  //include the source file
 				  // echo $target[1];
 				  // echo str_replace('\\', '/', $target[1]);
-				  include dirname(__FILE__) . '/../app/Controllers/' . str_replace('\\', '/', $target[1]) . '.php';
+				  include dirname(__FILE__) . '/../../../../../app/Controllers/' . str_replace('\\', '/', $target[1]) . '.php';
 				  $instance = new $class();
 				  $instance->$method($mm['params']);
 				} else {
