@@ -27,7 +27,7 @@
     },
     "autoload": {
         "psr-4": {
-          "Betasyntax\\": "src/Betasyntax/",
+          "Betasyntax\\": "src/Betasyntax/"
         },
         "files": [
             "src/Betasyntax/Helpers.php"
