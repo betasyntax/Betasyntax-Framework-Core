@@ -32,5 +32,10 @@
         "files": [
             "src/Betasyntax/Helpers.php"
         ]
-    }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
 }
