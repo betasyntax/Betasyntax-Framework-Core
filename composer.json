@@ -16,7 +16,7 @@
         "ext-mbstring": "*",
         "ext-openssl": "*",
         "monolog/monolog": "1.0.*",
-        "betasyntax/haml": "1.8.0",
+        "mthaml/mthaml": "1.8.0",
         "twig/twig": "1.24.1",
         "plasticbrain/php-flash-messages": "^1.0",
         "phpmailer/phpmailer": "^5.2",
