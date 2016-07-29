@@ -5,7 +5,7 @@ namespace Betasyntax\Db\Adapter;
 /**
  * MySQLi Pdo
  */
-class Pdo implements Betasyntax\Db\Adapter\AdapterInterface
+class Pdo implements AdapterInterface
 {
   private $_dbh;
   public $_rec_set;
