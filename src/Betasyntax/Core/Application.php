@@ -1,9 +1,9 @@
 <?php namespace Betasyntax\Core;
 
 use Closure;
-use Betasyntax\Core\Container\Container;
+// use Container\Container;
 
-class Application extends Container
+class Application extends \Betasyntax\Core\Container\Container
 {
   protected $version = '0.1';   
 
