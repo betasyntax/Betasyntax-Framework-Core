@@ -1,7 +1,7 @@
 <?php namespace Betasyntax\Core;
 
 use Closure;
-use Betasyntax\Core\Container;
+use Betasyntax\Core\Container\Container;
 
 class Application extends Container
 {
@@ -28,7 +28,7 @@ class Application extends Container
 
   public function setBasePath($basePath)
   {
-    
+
   }
 
   public function registerBaseBindings()
