@@ -1,9 +1,9 @@
 <?php namespace Betasyntax\Core;
 
 use Closure;
-// use Container\Container;
+use Betasyntax\Core\Container;
 
-class Application extends \Betasyntax\Core\Container\Container
+class Application extends Container
 {
   protected $version = '0.1';   
 
@@ -24,6 +24,11 @@ class Application extends \Betasyntax\Core\Container\Container
     $this->registerCoreContainerAliases();
 
     if ($basePath) $this->setBasePath($basePath);
+  }
+
+  public function setBasePath($basePath)
+  {
+    
   }
 
   public function registerBaseBindings()

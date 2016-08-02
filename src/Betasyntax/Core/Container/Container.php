@@ -1,4 +1,4 @@
-<?php namespace Betasyntax\Container;
+<?php namespace Betasyntax\Core\Container;
 
 Class Container
 {
