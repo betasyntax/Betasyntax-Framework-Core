@@ -2,17 +2,17 @@
 // File: ./Db/Factory.php
 namespace Betasyntax\Db;
 
-use config\Config;
+use config\DatabaseConfig as DbConfig;
 /**
  *  DbFactory Class
  */
 class DbFactory
 {
   /**
-   * @param  \config\DatabaseConfig
+   * @param  DbConfig $config
    * @return $adapter
    */
-  public static function connect(\config\DatabaseConfig $config)
+  public static function connect(DbConfig $config)
   {
     $className = sprintf("\\Betasyntax\\Db\\Adapter\\%s", $config->driver);
     if (class_exists($className)) {

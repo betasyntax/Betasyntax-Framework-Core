@@ -4,6 +4,8 @@ namespace Betasyntax;
 
 use Betasyntax\Db\DbFactory;
 use Config\DatabaseConfig;
+use Exception;
+use StdClass;
 
 class BaseModel  
 {
@@ -99,7 +101,7 @@ class BaseModel
   {
     if (!$config)
       $config = new DatabaseConfig();
-    self::$db = \Betasyntax\Db\DbFactory::connect($config);
+    self::$db = DbFactory::connect($config);
     restore_exception_handler();
     self::$info = (object) array( self::$arguments);
     unset(self::$info->password);
@@ -175,7 +177,7 @@ class BaseModel
    * Avoid exposing exception informations
    * @param Exception $exception [Optional] User password
    */
-  public static function safe_exception (\Exception $exception) 
+  public static function safe_exception (Exception $exception) 
   {
     die('Uncaught exception: '.$exception->getMessage());
   }
@@ -409,7 +411,7 @@ class BaseModel
   {
     self::instance();
     $sql = "SHOW COLUMNS FROM ".self::table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
-    self::$c = new \StdClass;
+    self::$c = new StdClass;
     self::$result = self::$db->fetch( $sql );
     for ($i=0;$i<count(self::$result);$i++) {
       $d = (string) self::$result[$i]->Field;

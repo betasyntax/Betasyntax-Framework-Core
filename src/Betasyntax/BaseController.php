@@ -1,7 +1,7 @@
 <?php 
 namespace Betasyntax;
 
-use Betasyntax\Authentication;
+use Betasyntax\Authentication as Auth;
 
 class BaseController
 {  
@@ -16,7 +16,7 @@ class BaseController
     $this->flash = app()->flash;
     $this->session = app()->session;
 
-    Authentication::secure($this->domain);
+    Auth::secure($this->domain);
     
     if (get_called_class()!='App\Controllers\SetupController') {
       Setup::wizard($this->domain);

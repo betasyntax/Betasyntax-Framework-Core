@@ -2,6 +2,7 @@
 
 namespace Betasyntax\Db\Adapter;
 
+use PDO as pd;
 /**
  * MySQLi Pdo
  */
@@ -13,7 +14,7 @@ class Pdo implements AdapterInterface
   public function connect(\config\DatabaseConfig $config)
   {
     $dsn = sprintf('mysql:dbname=%s;host=%s', $config->dbscheme, $config->host);
-    $this->_dbh = new \PDO($dsn, $config->user, $config->password, array(\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode="ALLOW_INVALID_DATES"',\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION));
+    $this->_dbh = new pd($dsn, $config->user, $config->password, array(pd::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode="ALLOW_INVALID_DATES"',pd::ATTR_ERRMODE => pd::ERRMODE_EXCEPTION));
     restore_exception_handler();
     $this->_dbh->exec('SET NAMES "UTF8"');
   }
@@ -21,7 +22,7 @@ class Pdo implements AdapterInterface
   {
     $sth = $this->_dbh->prepare($sql);
     $sth->execute();
-    $sth->setFetchMode(\PDO::FETCH_OBJ);
+    $sth->setFetchMode(pd::FETCH_OBJ);
     $this->_rec_set = $sth->fetchAll();
     return $this->_rec_set;
   }

@@ -1,6 +1,8 @@
 <?php 
 namespace Betasyntax;
 
+use Exception;
+
 class Router {
 	/**
 	 * @var array Array of all routes (incl. named routes).
@@ -69,7 +71,7 @@ class Router {
 	public function addRoutes($routes)
 	{
 		if (!is_array($routes) && !$routes instanceof Traversable) {
-			throw new \Exception('Routes should be an array or an instance of Traversable');
+			throw new Exception('Routes should be an array or an instance of Traversable');
 		}
 		foreach ($routes as $route) {
 			call_user_func_array(array($this, 'map'), $route);
@@ -109,7 +111,7 @@ class Router {
 		$this->routes[] = array($method, $route, $target, $name);
 		if($name) {
 			if(isset($this->namedRoutes[$name])) {
-				throw new \Exception("Can not redeclare route '{$name}'");
+				throw new Exception("Can not redeclare route '{$name}'");
 			} else {
 				$this->namedRoutes[$name] = $route;
 			}
@@ -131,7 +133,7 @@ class Router {
 	{
 		// Check if named route exists
 		if (!isset($this->namedRoutes[$routeName])) {
-			throw new \Exception("Route '{$routeName}' does not exist.");
+			throw new Exception("Route '{$routeName}' does not exist.");
 		}
 		// Replace named parameters
 		$route = $this->namedRoutes[$routeName];
