@@ -1,4 +1,4 @@
-<?php namespace Betasyntax;
+<?php namespace Betasyntax\Core;
 
 use Closure;
 
