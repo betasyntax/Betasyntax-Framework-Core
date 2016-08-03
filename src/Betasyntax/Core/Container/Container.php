@@ -2,5 +2,7 @@
 
 Class Container
 {
-
+  function __construct() {
+    var_dump($this);
+  }
 }
