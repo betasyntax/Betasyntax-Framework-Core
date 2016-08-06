@@ -1,8 +1,8 @@
 <?php namespace Betasyntax\Core\Container;
 
-Class Container
+use League\Container\Container as AppContainer;
+
+Class Container extends AppContainer
 {
-  function __construct() {
-    var_dump($this);
-  }
+
 }

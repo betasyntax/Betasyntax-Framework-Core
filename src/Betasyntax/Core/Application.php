@@ -6,7 +6,7 @@ use Betasyntax\Core\Container\Container;
 class Application extends Container
 {
   protected $version = '0.1';   
-
+  protected $basePath;
   /**
    * Create a new Illuminate application instance.
    *
@@ -16,33 +16,12 @@ class Application extends Container
   
   public function __construct($basePath = null)
   {
-    echo $this->version;
-    $this->registerBaseBindings();
-
-    $this->registerBaseServiceProviders();
-
-    $this->registerCoreContainerAliases();
-
     if ($basePath) $this->setBasePath($basePath);
+
   }
 
   public function setBasePath($basePath)
   {
-
-  }
-
-  public function registerBaseBindings()
-  {
-
-  }
-
-  public function registerBaseServiceProviders()
-  {
-
-  }
-
-  public function registerCoreContainerAliases()
-  {
-
+    $this->basePath =$basePath;
   }
 }
