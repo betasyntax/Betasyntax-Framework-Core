@@ -3,9 +3,11 @@
 namespace Betasyntax;
 
 use Betasyntax\Db\DbFactory;
-use Config\DatabaseConfig;
+// use config\Database;
 use Exception;
 use StdClass;
+
+// include '/mnt/html/dev1/config/Database.php';
 
 class BaseModel  
 {
@@ -99,8 +101,13 @@ class BaseModel
    */
   public function __construct ($config = false) 
   {
+    $app = app()->getInstance();
+    // $config = new \config\Database();
     if (!$config)
-      $config = new DatabaseConfig();
+      // $config = new Database();
+      $config = app()->container->get('config/Database');
+
+    // var_dump($config);
     self::$db = DbFactory::connect($config);
     restore_exception_handler();
     self::$info = (object) array( self::$arguments);

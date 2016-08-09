@@ -1,16 +1,21 @@
-<?php
+<?php namespace Betasyntax;
 
-namespace Betasyntax;
+use Betasyntax\Core\Application;
 
 class Config {
-    public function __construct() {
+    protected $app;
+    public function __construct(Application $app) {
+      echo "<pre>";
+      $this->app = $app;
+      var_dump($app);
       $this->loader();
     }
     private function loader() {
-        foreach (glob(APP_ROOT."config/*.php") as $filename) {
+        foreach (glob($this->app->getBasePath()."/config/*.php") as $filename) {
+          echo $filename;
           include $filename;
         }
-        foreach (glob(APP_ROOT."app/Models/*.php") as $filename){
+        foreach (glob($this->app->getBasePath()."/app/Models/*.php") as $filename){
           include_once $filename;
         }
     }

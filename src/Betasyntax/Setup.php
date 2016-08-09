@@ -8,7 +8,8 @@ class Setup
 
   public static function wizard($domain)
   {
-    if($domain==app()->auth_domain) {
+    // if($domain==app()->auth_domain) {
+    if($domain=='admin') {
       if(app()->session->isLoggedIn!=0) {
         //check db for setup.
         $is_started = Setting::find_by(['key_name'=>'setup_first_run']);

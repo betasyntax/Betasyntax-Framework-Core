@@ -1,5 +1,25 @@
 <?php
 
+use Betasyntax\Core\Application;
+use Plasticbrain\FlashMessages\FlashMessages;
+
+if ( ! function_exists('app'))
+{
+  /**
+   * Get the available container instance.
+   *
+   * @param  string  $make
+   * @param  array   $parameters
+   * @return mixed|\Illuminate\Foundation\Application
+   */
+  function app()
+  {
+    return Betasyntax\Core\Application::getInstance();
+
+    // return Container::getInstance()->make($make, $parameters);
+  }
+}
+
 if (!function_exists('view'))
 {
   /**
@@ -12,7 +32,12 @@ if (!function_exists('view'))
    */
   function view($view = null, $data = array())
   {
-    echo app()->twig->render($view,$data);
+    // echo "<pre>";
+    // var_dump(app());
+    $twig = app()->container->get('Betasyntax\View\View');
+    // var_dump(app()->getVersion());
+    $twig->loadHelpers();
+    $twig->render($view,$data);
   }
 }
 
@@ -44,7 +69,8 @@ if ( ! function_exists('flash'))
    */
   function flash()
   {
-    return app()->flash;
+    $flash = new FlashMessages();
+    return $flash;
   }
 }
 

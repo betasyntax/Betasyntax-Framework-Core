@@ -2,7 +2,7 @@
 // File: ./Db/Factory.php
 namespace Betasyntax\Db;
 
-use config\DatabaseConfig as DbConfig;
+use config\Database as DbConfig;
 /**
  *  DbFactory Class
  */

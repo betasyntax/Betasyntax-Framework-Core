@@ -46,7 +46,7 @@
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\ServiceProvider\BootableServiceProviderInterface;
 
-class SomeServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
+class ServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
     /**
      * The provides array is a way to let the container

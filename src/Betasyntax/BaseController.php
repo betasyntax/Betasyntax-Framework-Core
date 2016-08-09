@@ -13,8 +13,8 @@ class BaseController
 
   public function __construct()
   {
-    $this->flash = app()->flash;
-    $this->session = app()->session;
+    // $this->flash = app()->flash;
+    // $this->session = app()->session;
 
     Auth::secure($this->domain);
     
@@ -22,8 +22,8 @@ class BaseController
       Setup::wizard($this->domain);
     }
 
-    if($this->close_session) {
-      $this->session->close();
-    }
+    // if($this->close_session) {
+    //   $this->session->close();
+    // }
   }
 }

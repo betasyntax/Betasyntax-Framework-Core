@@ -4,15 +4,28 @@ use Closure;
 use Betasyntax\Core\Container\Container as BaseContainer;
 use League\Container\Container as AppContainer;
 use Betasyntax\Core\Services\ServiceProvider;
+use Betasyntax\Session;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
 // use League\Container\Container;
 
 
-class Application extends BaseContainer
+class Application 
 {
   protected $version = '03';   
-  protected $basePath;
+  protected $basePath = NULL;
+  protected static $instance;
+  public $container;
+  public $view;
+  public $router;
+  public $config;
+  public $session;
+  public $flash;
+  public $auth;
+  public $response;
+
+
+
   /**
    * The registered type aliases.
    *
@@ -29,40 +42,59 @@ class Application extends BaseContainer
   
   public function __construct($basePath = null)
   {
+    if(static::$instance==null) {
+      static::$instance=$this;
+    }
     if ($basePath) $this->setBasePath($basePath);
+    $this->boot();
+    // $this->
 
-    $container = new AppContainer;
-    var_dump($container);
-
-    $container->addServiceProvider(new Betasyntax\Core\Services\ServiceProvider);
-    // $this->registerAliases();
-    // $this->register();
+    // var_dump($container);
   }
+  static function getInstance()
+  {
+    return static::$instance;
+  }
+
   public function getversion()
   {
     return $this->version;
   }
   public function setBasePath($basePath)
   {
-    $this->basePath = $basePath;
+    $this->basePath = realpath($basePath);
+  }
+  public function getBasePath()
+  {
+    return $this->basePath;
   }
 
-  // public function registerAliases() {
-  //   $aliases = array(
-  //     'app' => 'Betasyntax\Core\Application',
-  //     'router' => 'Betasyntax\Router',
-  //     'config' => 'Betasyntax\Config;',
-  //     'view' => 'Betasyntax\View\View'
-  //   );
-  //   foreach ($aliases as $key => $aliases) {
-  //     foreach ((array) $aliases as $alias) {
-  //       $this->alias($key, $alias);
-  //     }
-  //   }    
-  // }
+  public function boot()
+  {
+    $this->container = new AppContainer;
+    // $this->container->delegate(
+    //   new \League\Container\ReflectionContainer
+    // );
 
-  // public function register()
-  // {
-  //   return parent::start($this);
-  // }
+    // $this->container->add('Betasyntax\Core\Application');
+    $this->container->add('Betasyntax\Router');
+    
+    // $this->container->add('Betasyntax\Config');
+    // $this->container->add('Betasyntax\ModelsLoader');
+    $this->container->add('Betasyntax\Functions');
+    $this->container->add('Betasyntax\Authentication');
+    $this->container->add('Betasyntax\Response');
+    // $this->container->add('config\Database')->withArgument($this);
+    $this->container->add('Betasyntax\View\View')->withArgument($this);
+    $this->container->add('Betasyntax\ModelsLoader');
+    $this->container->add('config\Database');
+    // new \Betasyntax\Config($this);
+
+    $this->session = Session::getInstance();
+
+    $this->container->get('Betasyntax\ModelsLoader');
+    $this->util = $this->container->get('Betasyntax\Functions');
+    $this->auth = $this->container->get('Betasyntax\Authentication');
+    $this->response = $this->container->get('Betasyntax\Response');
+  }
 }

@@ -1,6 +1,4 @@
-<?php
-
-namespace Betasyntax;
+<?php namespace Betasyntax;
 
 use App\Models\User;
 
@@ -34,12 +32,12 @@ Class Authentication
 
   public static function domain($domain)
   { 
-    return (empty($domain))?:app()->domain;
+    return (empty($domain))?:'web';
   }
 
   public static function secure($domain)
   {
-    if($domain==app()->auth_domain) {
+    if($domain=='admin') {
       if(app()->session->isLoggedIn==0) {
         header('Location: '.app()->loginUrl);
       }

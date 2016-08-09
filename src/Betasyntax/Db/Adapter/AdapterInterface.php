@@ -2,7 +2,7 @@
 // File: ./Db/Adapter/AdapterInterface.php
 namespace Betasyntax\Db\Adapter;
 
-use config\DatabaseConfig as DbConfig;
+use config\Database as DbConfig;
 /**
  * Abstract interface
  */
