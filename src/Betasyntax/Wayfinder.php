@@ -64,7 +64,12 @@ class Wayfinder
               $url2='#';
               $opt = 'onClick="window.open("'.$z->url.'")"';
             } else {
-              $url2='/'.$z->url;
+              var_dump($z->url);
+              if(substr( $z->url, 0, 1 ) === "\/") {
+                $url2=$z->url;
+              } else {
+                $url2='/'.$z->url;
+              }
             }
             echo '<li'.$active.'><a href="'.$url2.'" '.$opt.'>'.$z->title.'</a></li>';
             // self::tree($row2->id);
@@ -77,7 +82,7 @@ class Wayfinder
           echo '<li class="auth"><a href="/logout">Logout</a></li>';
         } else {
           echo '<li class="auth"><a href="/login">Login</a></li>';
-          echo '<li class="auth"><a href="/logout">Sign Up</a></li>';
+          echo '<li class="auth"><a href="/signup">Sign Up</a></li>';
         }
       }
       $counter++;

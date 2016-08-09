@@ -111,9 +111,7 @@ class BaseModel
       $config->password = $dbconfig['pass'];
       $config->dbscheme = $dbconfig['schema'];
     }
-      // $config = app()->container->get('\config\Database');
 
-    var_dump($config);
     self::$db = DbFactory::connect($config);
     // var_dump(self::$db);
     if (! self::$db) {
@@ -314,6 +312,7 @@ class BaseModel
   {
     self::$result = self::$db->fetch( $sql );
     self::$c = self::$result;
+    
     if (count(self::$result)==1) {
       return (object) self::$result[0];
     } else {

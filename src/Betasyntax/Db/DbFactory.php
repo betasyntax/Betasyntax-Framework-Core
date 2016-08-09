@@ -14,9 +14,7 @@ class DbFactory
    */
   public static function connect(Database $config)
   {
-    // var_dump($config);
     $className = sprintf("\\Betasyntax\\Db\\Adapter\\%s", $config->driver);
-      echo $className."\n";
     if (class_exists($className)) {
       $adapter = new $className();
       $adapter->connect($config);
