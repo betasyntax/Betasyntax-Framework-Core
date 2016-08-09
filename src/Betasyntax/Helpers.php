@@ -20,6 +20,22 @@ if ( ! function_exists('app'))
   }
 }
 
+if (!function_exists('config'))
+{
+  /**
+   * Get the evaluated view contents for the given view.
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return \Illuminate\View\View
+   */
+  function config($key)
+  {
+    $config = app()->config;
+    return $config->conf[$key];
+  }
+}
 if (!function_exists('view'))
 {
   /**

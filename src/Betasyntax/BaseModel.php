@@ -3,7 +3,7 @@
 namespace Betasyntax;
 
 use Betasyntax\Db\DbFactory;
-// use config\Database;
+use Betasyntax\Database;
 use Exception;
 use StdClass;
 
@@ -102,13 +102,24 @@ class BaseModel
   public function __construct ($config = false) 
   {
     $app = app()->getInstance();
-    // $config = new \config\Database();
-    if (!$config)
-      // $config = new Database();
-      $config = app()->container->get('config/Database');
+    if (!$config){
+      $dbconfig = config('mysql');
+      $config = new Database;
+      $config->driver = $dbconfig['driver'];
+      $config->host = $dbconfig['host'];
+      $config->user = $dbconfig['user'];
+      $config->password = $dbconfig['pass'];
+      $config->dbscheme = $dbconfig['schema'];
+    }
+      // $config = app()->container->get('\config\Database');
 
-    // var_dump($config);
+    var_dump($config);
     self::$db = DbFactory::connect($config);
+    // var_dump(self::$db);
+    if (! self::$db) {
+      die('Error connecting to database. Please check your settings');
+      // redirect('/login');
+    }
     restore_exception_handler();
     self::$info = (object) array( self::$arguments);
     unset(self::$info->password);

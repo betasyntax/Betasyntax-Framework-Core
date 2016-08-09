@@ -45,11 +45,11 @@ class Application
     if(static::$instance==null) {
       static::$instance=$this;
     }
-    if ($basePath) $this->setBasePath($basePath);
+    //set the base path so we can use it for other plugins in the system
+    $this->setBasePath($basePath);
     $this->boot();
-    // $this->
 
-    // var_dump($container);
+
   }
   static function getInstance()
   {
@@ -71,30 +71,32 @@ class Application
 
   public function boot()
   {
-    $this->container = new AppContainer;
-    // $this->container->delegate(
-    //   new \League\Container\ReflectionContainer
-    // );
+    // get the routes!
+    $routes = include $this->basePath.'/../app/routes.php';
 
-    // $this->container->add('Betasyntax\Core\Application');
-    $this->container->add('Betasyntax\Router');
-    
-    // $this->container->add('Betasyntax\Config');
-    // $this->container->add('Betasyntax\ModelsLoader');
-    $this->container->add('Betasyntax\Functions');
-    $this->container->add('Betasyntax\Authentication');
-    $this->container->add('Betasyntax\Response');
-    // $this->container->add('config\Database')->withArgument($this);
-    $this->container->add('Betasyntax\View\View')->withArgument($this);
-    $this->container->add('Betasyntax\ModelsLoader');
-    $this->container->add('config\Database');
-    // new \Betasyntax\Config($this);
-
+    //start the session
     $this->session = Session::getInstance();
+    
+    // create the container instance
+    $this->container = new AppContainer;
+    
+    //this will make containers for all of our classes.
+    $this->container->delegate(
+      new \League\Container\ReflectionContainer
+    );
 
-    $this->container->get('Betasyntax\ModelsLoader');
+    // if we need any special special arguments to pass to any of our containers add them here
+    $this->container->add('Betasyntax\Router')->withArgument($routes);
+    $this->container->add('Betasyntax\View\View')->withArgument($this);
+    $this->container->add('Betasyntax\Config')->withArgument($this);
+
+    // set some defaults so we can use them in our controllers.
+    // 
+    // $this->container->get('Betasyntax\ModelsLoader');
     $this->util = $this->container->get('Betasyntax\Functions');
     $this->auth = $this->container->get('Betasyntax\Authentication');
     $this->response = $this->container->get('Betasyntax\Response');
+    $this->config = $this->container->get('Betasyntax\Config');
+
   }
 }

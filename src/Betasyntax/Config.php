@@ -1,22 +1,15 @@
 <?php namespace Betasyntax;
 
 use Betasyntax\Core\Application;
+use Noodlehaus\Config as Conf;
 
 class Config {
+    
     protected $app;
+    public $conf;
+
     public function __construct(Application $app) {
-      echo "<pre>";
       $this->app = $app;
-      var_dump($app);
-      $this->loader();
-    }
-    private function loader() {
-        foreach (glob($this->app->getBasePath()."/config/*.php") as $filename) {
-          echo $filename;
-          include $filename;
-        }
-        foreach (glob($this->app->getBasePath()."/app/Models/*.php") as $filename){
-          include_once $filename;
-        }
+      $this->conf = Conf::load($app->getBasePath().'/../config/config.json');
     }
 }

@@ -1,0 +1,17 @@
+{
+    "name": "betasyntax/betasyntax",
+    "description": "Beta Syntax Framework.",
+    "keywords": ["framework", "betasyntax"],
+    "license": "MIT",
+    "type": "project",
+    "version": "0.0.1",
+    "minimum-stablilty":"dev",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Betasyntax\\Db\\": ""
+        }
+    }
+}

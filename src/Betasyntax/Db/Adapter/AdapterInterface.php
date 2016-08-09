@@ -2,13 +2,13 @@
 // File: ./Db/Adapter/AdapterInterface.php
 namespace Betasyntax\Db\Adapter;
 
-use config\Database as DbConfig;
+use Betasyntax\Database;
 /**
  * Abstract interface
  */
 interface AdapterInterface
 {
-    public function connect(DbConfig $config);
+    public function connect(Database $config);
     public function fetch($sql);
     public function execute($sql);
     public function columnMeta();
