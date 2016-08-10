@@ -19,15 +19,16 @@
         "monolog/monolog":"1.0.*",
         "mthaml/mthaml":"1.8.0",
         "twig/twig":"1.24.1",
-        "plasticbrain/php-flash-messages":"^1.0",
+        "plasticbrain/php-flash-messages":"^1.0", 
         "phpmailer/phpmailer":"^5.2",
         "rmccue/requests":">=1.0",
         "league/container":"2.2.0",
-        "hassankhan/config":"0.10.0",
-        "robmorgan/phinx":"v0.6.4"
+        "hassankhan/config":"0.10.0"
     },
     "require-dev": {        
-        "phpunit/phpunit":"5.4.*"
+        "phpunit/phpunit":"5.4.*",
+        "robmorgan/phinx":"v0.6.4",
+        "mockery/mockery": "~0.9"
     },
     "autoload": {
         "psr-4": {
