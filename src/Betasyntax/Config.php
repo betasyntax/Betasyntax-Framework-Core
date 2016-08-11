@@ -10,6 +10,6 @@ class Config {
 
     public function __construct() {
       $this->app = app()->getInstance();
-      $this->conf = Conf::load($this->app->getBasePath().'/../config/config.json');
+      $this->conf = Conf::load($this->app->getBasePath().'/../config/config.php');
     }
 }
