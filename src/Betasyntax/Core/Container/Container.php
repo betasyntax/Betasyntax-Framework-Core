@@ -24,6 +24,7 @@ Class Container
   {
     $this->aliases[$alias] = $abstract;
   }
+  
   protected function getAlias($abstract)
   {
     return isset($this->aliases[$abstract]) ? $this->aliases[$abstract] : $abstract;
@@ -38,6 +39,7 @@ Class Container
         ->withArgument($app); 
     }
   }
+
   public function get($item) 
   {
     return $this->app->get($item);

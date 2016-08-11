@@ -1,9 +1,6 @@
 <?php namespace Betasyntax\View;
 
 use Betasyntax\Core\Application;
-use MtHaml\Environment as HamlEnv;
-use MtHaml\Support\Twig\Loader as HamlLoader;
-use MtHaml\Support\Twig\Extension as HamlExt;
 use Betasyntax\Core\Interfaces\View\ViewInterface;
 use Betasyntax\Wayfinder;
 
@@ -22,15 +19,8 @@ Class View
       $this->app = $app;
     }
     $path = '/mnt/html/dev1/app/Views/';
-
-
-    // $haml = new HamlEnv('twig');
-
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
-    // $hamll = new HamlLoader($haml, $twigLoader);
     $this->twig = new \Twig_Environment($twigLoader);
-
-    // $this->twig->addExtension(new HamlExt());
     $this->loadHelpers();
   }
 

@@ -1,8 +1,7 @@
-<?php
-// File: ./Db/Adapter/AdapterInterface.php
-namespace Betasyntax\Db\Adapter;
+<?php namespace Betasyntax\Db\Adapter;
 
 use Betasyntax\Database;
+
 /**
  * Abstract interface
  */

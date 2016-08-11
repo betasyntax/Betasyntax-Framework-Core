@@ -1,8 +1,7 @@
-<?php
-// File: ./Db/Factory.php
-namespace Betasyntax\Db;
+<?php namespace Betasyntax\Db;
 
 use Betasyntax\Database;
+
 /**
  *  DbFactory Class
  */

@@ -22,14 +22,10 @@ Class ViewHaml
       $this->app = $app;
     }
     $path = '/mnt/html/dev1/app/Views/';
-
-
     $haml = new HamlEnv('twig');
-
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
     $hamll = new HamlLoader($haml, $twigLoader);
     $this->twig = new \Twig_Environment($hamll);
-
     $this->twig->addExtension(new HamlExt());
     $this->loadHelpers();
   }
