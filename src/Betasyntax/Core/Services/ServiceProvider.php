@@ -1,53 +1,15 @@
-<?php namespace Betasyntax\Core\Services\ServiceProvider;
+<?php namespace Betasyntax\Core\Services;
 
-// use League\Container\ServiceProvider\AbstractServiceProvider;
-
-// class ServiceProvider extends AbstractServiceProvider
-// {
-//     /**
-//      * The provides array is a way to let the container
-//      * know that a service is provided by this service
-//      * provider. Every service that is registered via
-//      * this service provider must have an alias added
-//      * to this array or it will be ignored.
-//      *
-//      * @var array
-//      */
-//     protected $provides = [
-//         'Betasyntax\Core\Application',
-//         'Betasyntax\Router',
-//         'Betasyntax\Config',
-//         'Betasyntax\View\View'
-//     ];
-
-//     *
-//      * This is where the magic happens, within the method you can
-//      * access the container and register or retrieve anything
-//      * that you need to, but remember, every alias registered
-//      * within this method must be declared in the `$provides` array.
-     
-//     public function register()
-//     {
-//         // $this->getContainer()->add('key', 'value');
-        
-//         $this->getContainer()->add('Betasyntax\Core\Application');
-
-//         $this->getContainer()->add('Betasyntax\Router')
-//              ->withArgument('Betasyntax\Core\Application');
-
-//         $this->getContainer()->add('Betasyntax\Config');
-//         $this->getContainer()->add('Betasyntax\View\View')
-//              ->withArgument('Betasyntax\Core\Application'); 
-
-//     }
-// }
-
+use Betasyntax\Core\Application;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\ServiceProvider\BootableServiceProviderInterface;
 
 class ServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
+    protected $app;
+    protected $middleware;
+
     /**
      * The provides array is a way to let the container
      * know that a service is provided by this service
@@ -58,12 +20,28 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
      * @var array
      */
     protected $provides = [
-        'Betasyntax\Core\Application',
-        'Betasyntax\Router',
-        'Betasyntax\Config',
-        'Betasyntax\View\View'
     ];
+
     
+    /**
+     * [__construct Include the main app object so we can Inject the app instance into our classes as needed.]
+     * @param Application $app [Application Class]
+     */
+    public function __construct(Application $app, $middleware) 
+    {
+        // set the app object
+        $this->app = $app;
+        // populate the provides array. This will be our middleware list
+        $this->middleware = $middleware;
+        $this->setProviders($this->middleware);
+    }
+
+    private function setProviders($middleware) {
+        foreach ($middleware as $key => $value) {
+            $this->provides[] = $value;
+        }
+    }
+
     /**
      * In much the same way, this method has access to the container
      * itself and can interact with it however you wish, the difference
@@ -77,24 +55,31 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
      */
     public function boot()
     {
-        $this->getContainer()
-             ->inflector('SomeType')
-             ->invokeMethod('someMethod', ['some_arg']);
-            
-        $this->getContainer()->add('Betasyntax\Core\Application');
+        //this will automatically make containers for all of our classes.
+        $this->getContainer()->delegate(
+          new \League\Container\ReflectionContainer
+        );
+
+        // these are the core of the system. They can't be overwritten
+        $this->app->config = $this->container->get('Betasyntax\Config');
+        $this->app->util = $this->container->get('Betasyntax\Functions');
+        $this->app->response = $this->container->get('Betasyntax\Response');
+
+        // register any user provided middlewares
+        $this->register();
     }
 
     /**
-     * {@inheritdoc}
+     * This is where the magic happens, within the method you can
+     * access the container and register or retrieve anything
+     * that you need to, but remember, every alias registered
+     * within this method must be declared in the `$provides` array.
      */
     public function register()
-    {
-
-        $this->getContainer()->add('Betasyntax\Router')
-             ->withArgument('Betasyntax\Core\Application');
-
-        $this->getContainer()->add('Betasyntax\Config');
-        $this->getContainer()->add('Betasyntax\View\View')
-             ->withArgument('Betasyntax\Core\Application'); 
+    {   
+        // dynamically register anything in /config/app.php array
+        for($i=0;$i<count($this->provides);$i++) {
+            $this->getContainer()->add($this->provides[$i]);
+        }
     }
 }

@@ -7,7 +7,7 @@ use MtHaml\Support\Twig\Extension as HamlExt;
 use Betasyntax\Core\Interfaces\View\ViewInterface;
 use Betasyntax\Wayfinder;
 
-Class View
+Class ViewHaml
 {
   public $twig;
   protected $basePath;
@@ -24,13 +24,13 @@ Class View
     $path = '/mnt/html/dev1/app/Views/';
 
 
-    // $haml = new HamlEnv('twig');
+    $haml = new HamlEnv('twig');
 
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
-    // $hamll = new HamlLoader($haml, $twigLoader);
-    $this->twig = new \Twig_Environment($twigLoader);
+    $hamll = new HamlLoader($haml, $twigLoader);
+    $this->twig = new \Twig_Environment($hamll);
 
-    // $this->twig->addExtension(new HamlExt());
+    $this->twig->addExtension(new HamlExt());
     $this->loadHelpers();
   }
 

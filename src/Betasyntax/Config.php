@@ -8,8 +8,8 @@ class Config {
     protected $app;
     public $conf;
 
-    public function __construct(Application $app) {
-      $this->app = $app;
-      $this->conf = Conf::load($app->getBasePath().'/../config/config.json');
+    public function __construct() {
+      $this->app = app()->getInstance();
+      $this->conf = Conf::load($this->app->getBasePath().'/../config/config.json');
     }
 }

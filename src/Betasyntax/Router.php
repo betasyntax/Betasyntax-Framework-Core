@@ -40,6 +40,11 @@ class Router {
 	  */
 	public function __construct($routes = array(), $basePath = '', $matchTypes = array()) 
 	{
+		if(!$routes) {
+			$app = app()->getInstance();
+			$routes = include $app->getBasePath().'/../app/routes.php';
+		}
+		
 		$this->addRoutes($routes);
 		$this->setBasePath($basePath);
 		$this->addMatchTypes($matchTypes);

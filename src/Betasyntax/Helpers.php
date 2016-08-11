@@ -48,10 +48,7 @@ if (!function_exists('view'))
    */
   function view($view = null, $data = array())
   {
-    // echo "<pre>";
-    // var_dump(app());
-    $twig = app()->container->get('Betasyntax\View\View');
-    // var_dump(app()->getVersion());
+    $twig = app()->container->get(app()->getViewObjectStr());
     $twig->loadHelpers();
     $twig->render($view,$data);
   }
