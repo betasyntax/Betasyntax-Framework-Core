@@ -2,12 +2,16 @@
 namespace Betasyntax\Router;
 
 use Exception;
+use League\Tactician\CommandBus;
+use League\Tactician\Plugins\LockingMiddleware;
 
 class Router {
 	/**
 	 * @var array Array of all routes (incl. named routes).
 	 */
 	protected $routes = array();
+	protected $app;
+  protected $appMiddleware;
 
 	protected $controllersDir;
 
@@ -42,17 +46,28 @@ class Router {
 	  */
 	public function __construct($routes = array(), $basePath = '', $matchTypes = array()) 
 	{
-		$app = app()->getInstance();
+		$this->app = app()->getInstance();
 		if(!$routes) {
-			$routes = include $app->getBasePath().'/../app/routes.php';
+			$routes = include $this->app->getBasePath().'/../app/routes.php';
 		}
 
-		$this->controllersDir = app()->getBasePath() . '/../app/Controllers/';
+		// get the middleware array
+    $this->appMiddleware = $this->getMiddleWareArray();
+    // set the controller dir
+		$this->controllersDir = $this->app->getBasePath() . '/../app/Controllers/';
+		// get all the routes
 		$this->addRoutes($routes);
+		// set the base path 
 		$this->setBasePath($basePath);
+		// match any types
 		$this->addMatchTypes($matchTypes);
+		
 	}
 	
+  private function getMiddleWareArray()
+  {
+    return $this->app->conf('middleware');
+  }
 	/**
 	 * Retrieves all routes.
 	 * Useful if you want to process or display routes.
@@ -254,9 +269,52 @@ class Router {
 				  $class = "\\App\\Controllers\\".$target[1];
 				  //include the source file
 				  include $this->controllersDir . str_replace('\\', '/', $target[1]) . '.php';
+				  //instantiate the class
 				  $instance = new $class();
-				  //this is where we will place our middleware. first check to see if the there is an alias in the middleware array and then execute it against our controller.
-				  // var_dump($instance->getMiddleware());
+				  //this is where we will place our middleware. first check to see if the there is an alias in 
+				  //the middleware array and then execute it against our controller.
+				  //get the middleware array from the instance
+				  $instanceMiddleware = $instance->getMiddleware();
+				  $middleware = $this->getMiddleWareArray();
+				  //setup locking on the command bus
+					$comArray[] = new LockingMiddleware();
+					//count the instance middleware array
+					$middlewareCnt = count($instanceMiddleware);
+				  // var_dump($instanceMiddleware);
+				  // $commandBus = new CommandBus($array);
+				  $middlewareInstances = [];
+				  echo "<pre>";
+				  // $i = 0;
+				  // foreach($instanceMiddleware as $val) {
+				  // 	// echo 'instanceMiddleware[$i] ';
+				  // 	// var_dump($instanceMiddleware[$i]);
+				  // 	//then loop through the middleware and see if we have a match
+					 //  foreach ($middleware as $key => $value) {
+					 //  	// echo $val .' is '.$key;
+						// 	if($val==$key) {
+						//   	//check if its an array if it is we have to add them to the container individually.
+						//   	$middlewareInstances[$i][]=$instanceMiddleware[$i];
+						//   	if (is_array($value)) {
+						//   		//first index is the middleware class and the second index is the plugin
+						//   		// $middlewareInstances[$i][$instanceMiddleware[$i]];
+						//   		for($j=0;$j<count($value);$j++) {
+						//   			$middlewareInstances[$i][] = $value[$j];
+						//   		}
+					 //  			$this->app->container->add($value[0])->withArgument($value[1]);
+
+						//   	} else {
+						//   		//just a middleware class. This class will extend from another and doesnt need the plugin portion
+					 //  			// $this->app->container->add($value);
+					 //  			$middlewareInstances[$i][] = $value;
+						//   	}
+						//   }
+					 //  }
+					 //  $i++;
+				  // }
+				  // var_dump($middlewareInstances);
+				  // 
+				  echo "</pre>";
+
 				  $instance->$method($mm['params']);
 				} else {
 				  header($_SERVER["SERVER_PROTOCOL"] . ' 404 Not Found');

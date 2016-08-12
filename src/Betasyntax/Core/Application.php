@@ -14,6 +14,7 @@ class Application
   protected $basePath = NULL;
   protected $viewObjectStr;
   protected $appConf;
+  protected $appProviders;
   public $container;
   public $view;
   public $router;
@@ -45,8 +46,10 @@ class Application
     }
     //set the base path so we can use it for other plugins in the system
     $this->setBasePath($basePath);
+    //get the main app config
+    $this->getConfArray();
     //assign the middleware array
-    $this->appConf = $this->getMiddleWareArray();
+    $this->appProviders = $this->getProvidersArray();
     //boot the app
     $this->boot();
   }
@@ -56,10 +59,19 @@ class Application
     return static::$instance;
   }
 
-  private function getMiddleWareArray()
+  private function getConfArray()
   {
-    $middleware = include $this->basePath.'/../config/app.php';
-    return $middleware['providers'];
+    $this->appConf = include $this->basePath.'/../config/app.php';
+  }
+
+  public function conf($key)
+  {
+    return $this->appConf[$key];
+  }
+
+  private function getProvidersArray()
+  {
+    return $this->appConf['providers'];
   }
 
   public function getversion()
@@ -79,7 +91,7 @@ class Application
 
   public function getViewObjectStr()
   {
-    foreach ($this->appConf as $k => $v) {
+    foreach ($this->appProviders as $k => $v) {
       if ($k == 'view')
         return $v;
     }
@@ -92,6 +104,6 @@ class Application
     // create the container instance
     $this->container = new AppContainer;    
     //boot the app and registers any middlewhere
-    $this->container->addServiceProvider(new ServiceProvider($this,$this->getMiddleWareArray()));    
+    $this->container->addServiceProvider(new ServiceProvider($this,$this->getProvidersArray()));    
   }
 }

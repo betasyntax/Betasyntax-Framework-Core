@@ -7,8 +7,11 @@ use League\Container\ServiceProvider\BootableServiceProviderInterface;
 
 class ServiceProvider extends AbstractServiceProvider implements BootableServiceProviderInterface
 {
+    /**
+     * [$app The main app instance. Gets populated during app creation.]
+     * @var [type]
+     */
     protected $app;
-    protected $middleware;
 
     /**
      * The provides array is a way to let the container
@@ -19,25 +22,23 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
      *
      * @var array
      */
-    protected $provides = [
-    ];
-
+    protected $provides = [];
     
     /**
      * [__construct Include the main app object so we can Inject the app instance into our classes as needed.]
      * @param Application $app [Application Class]
      */
-    public function __construct(Application $app, $middleware) 
+    public function __construct(Application $app, $providers) 
     {
         // set the app object
         $this->app = $app;
-        // populate the provides array. This will be our middleware list
-        $this->middleware = $middleware;
-        $this->setProviders($this->middleware);
+        // populate the provides array. This will be our providers list
+        $this->providers = $providers;
+        $this->setProviders($this->providers);
     }
 
-    private function setProviders($middleware) {
-        foreach ($middleware as $key => $value) {
+    private function setProviders($providers) {
+        foreach ($providers as $key => $value) {
             $this->provides[] = $value;
         }
     }
