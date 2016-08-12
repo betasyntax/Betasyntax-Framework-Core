@@ -23,7 +23,7 @@ if ( ! function_exists('app'))
 if (!function_exists('config'))
 {
   /**
-   * Get a config value.
+   * Get the evaluated view contents for the given view.
    *
    * @param  string  $view
    * @param  array   $data
@@ -73,7 +73,7 @@ if (!function_exists('dd'))
 if ( ! function_exists('flash'))
 {
   /**
-   * Set the flash global object
+   * Get the evaluated view contents for the given view.
    *
    * @param  string  $view
    * @param  array   $data
@@ -90,7 +90,7 @@ if ( ! function_exists('flash'))
 if ( ! function_exists('redirect'))
 {
   /**
-   * Set the redirect global function
+   * Get the evaluated view contents for the given view.
    *
    * @param  string  $view
    * @param  array   $data

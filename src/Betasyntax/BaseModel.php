@@ -113,8 +113,10 @@ class BaseModel
     }
 
     self::$db = DbFactory::connect($config);
+    // var_dump(self::$db);
     if (! self::$db) {
       die('Error connecting to database. Please check your settings');
+      // redirect('/login');
     }
     restore_exception_handler();
     self::$info = (object) array( self::$arguments);
@@ -206,10 +208,14 @@ class BaseModel
     return self::$result ? self::$result->queryString : null;
   }  
 
+
   public static function table_name() 
   {
     $class = get_called_class();
     $vowels = array('a','e','i','o');
+    // var_dump($class);
+    // var_dump($class[strlen($class)-1]);
+    // var_dump(in_array($class[strlen($class)-1], $vowels));
     if ($class[strlen($class)-1]=='y' ) {
       $class = str_replace('y', 'ies', $class);
     } else {
@@ -217,6 +223,7 @@ class BaseModel
     }
     $class = preg_replace('/\B([A-Z])/', '_$1', $class);
     $class = explode('\\', strtolower($class));
+    // var_dump(end($class));
     return end($class);
   }
 
@@ -233,7 +240,6 @@ class BaseModel
     self::instance();
     return self::_getResult($sql);
   }
-
   //same as above?!
   public static function query($sql) 
   {
@@ -298,6 +304,7 @@ class BaseModel
   { 
     self::instance();
     $sql = self::_getSql($join_type,$foreign_table,$id);
+    // var_dump($sql);  
     return self::_getResult($sql);
   }
 
@@ -362,6 +369,7 @@ class BaseModel
       }
     } else {
       $c = count($where);
+      // echo $c;
       $idin = $has_one_where.'id IN (';
       for ($i=0;$i<count($where);$i++) {
         $idin .= $where[$i];

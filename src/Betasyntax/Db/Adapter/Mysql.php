@@ -1,9 +1,10 @@
-<?php namespace Betasyntax\Db\Adapter;
+<?php
+
+namespace Betasyntax\Db\Adapter;
 
 use Betasyntax\Db\Adapter\AdapterInterface as DbInterface;
 use config\DatabaseConfig as DbConfig;
 use mysqli;
-
 /**
  * MySQLi Adapter
  */

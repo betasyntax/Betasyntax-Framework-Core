@@ -1,5 +1,5 @@
 <?php 
-namespace Betasyntax;
+namespace Betasyntax\Router;
 
 
 class BaseController
@@ -11,4 +11,14 @@ class BaseController
   protected $flash = null;
   protected $middleware = [];
 
+  public function __construct()
+  {
+    // error_log($this->middleware);
+    // var_dump($this->middleware);
+  }
+
+  public function getMiddleware()
+  {
+    return $this->middleware;
+  }
 }

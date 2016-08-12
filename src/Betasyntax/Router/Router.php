@@ -1,5 +1,5 @@
 <?php 
-namespace Betasyntax;
+namespace Betasyntax\Router;
 
 use Exception;
 
@@ -8,6 +8,8 @@ class Router {
 	 * @var array Array of all routes (incl. named routes).
 	 */
 	protected $routes = array();
+
+	protected $controllersDir;
 
 	/**
 	 * @var array Array of all named routes.
@@ -40,11 +42,12 @@ class Router {
 	  */
 	public function __construct($routes = array(), $basePath = '', $matchTypes = array()) 
 	{
+		$app = app()->getInstance();
 		if(!$routes) {
-			$app = app()->getInstance();
 			$routes = include $app->getBasePath().'/../app/routes.php';
 		}
-		
+
+		$this->controllersDir = app()->getBasePath() . '/../app/Controllers/';
 		$this->addRoutes($routes);
 		$this->setBasePath($basePath);
 		$this->addMatchTypes($matchTypes);
@@ -248,12 +251,12 @@ class Router {
 				  //break up the target at the @ symbol. first part is function second is the file 
 				  $target = explode('@', $mm['target']);
 				  $method = $target[0];
-				  $class = "\App\\Controllers\\".$target[1];
+				  $class = "\\App\\Controllers\\".$target[1];
 				  //include the source file
-				  // echo $target[1];
-				  // echo str_replace('\\', '/', $target[1]);
-				  include dirname(__FILE__) . '/../../../../../app/Controllers/' . str_replace('\\', '/', $target[1]) . '.php';
+				  include $this->controllersDir . str_replace('\\', '/', $target[1]) . '.php';
 				  $instance = new $class();
+				  //this is where we will place our middleware. first check to see if the there is an alias in the middleware array and then execute it against our controller.
+				  // var_dump($instance->getMiddleware());
 				  $instance->$method($mm['params']);
 				} else {
 				  header($_SERVER["SERVER_PROTOCOL"] . ' 404 Not Found');
