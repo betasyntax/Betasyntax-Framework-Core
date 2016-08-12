@@ -1,9 +1,11 @@
 <?php 
 namespace Betasyntax\Router;
 
+use Closure;
 use Exception;
-use League\Tactician\CommandBus;
-use League\Tactician\Plugins\LockingMiddleware;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use Betasyntax\Pipeline;
 
 class Router {
 	/**
@@ -277,45 +279,69 @@ class Router {
 				  $instanceMiddleware = $instance->getMiddleware();
 				  $middleware = $this->getMiddleWareArray();
 				  //setup locking on the command bus
-					$comArray[] = new LockingMiddleware();
+					// $comArray[] = new LockingMiddleware();
 					//count the instance middleware array
 					$middlewareCnt = count($instanceMiddleware);
 				  // var_dump($instanceMiddleware);
 				  // $commandBus = new CommandBus($array);
 				  $middlewareInstances = [];
-				  echo "<pre>";
-				  // $i = 0;
-				  // foreach($instanceMiddleware as $val) {
-				  // 	// echo 'instanceMiddleware[$i] ';
-				  // 	// var_dump($instanceMiddleware[$i]);
-				  // 	//then loop through the middleware and see if we have a match
-					 //  foreach ($middleware as $key => $value) {
-					 //  	// echo $val .' is '.$key;
-						// 	if($val==$key) {
-						//   	//check if its an array if it is we have to add them to the container individually.
-						//   	$middlewareInstances[$i][]=$instanceMiddleware[$i];
-						//   	if (is_array($value)) {
-						//   		//first index is the middleware class and the second index is the plugin
-						//   		// $middlewareInstances[$i][$instanceMiddleware[$i]];
-						//   		for($j=0;$j<count($value);$j++) {
-						//   			$middlewareInstances[$i][] = $value[$j];
-						//   		}
-					 //  			$this->app->container->add($value[0])->withArgument($value[1]);
-
-						//   	} else {
-						//   		//just a middleware class. This class will extend from another and doesnt need the plugin portion
-					 //  			// $this->app->container->add($value);
-					 //  			$middlewareInstances[$i][] = $value;
-						//   	}
-						//   }
-					 //  }
-					 //  $i++;
-				  // }
-				  // var_dump($middlewareInstances);
-				  // 
-				  echo "</pre>";
 
 				  $instance->$method($mm['params']);
+
+				  echo "<pre>";
+				  $i = 0;
+				  foreach($instanceMiddleware as $val) {
+				  	// echo 'instanceMiddleware[$i] ';
+				  	// var_dump($instanceMiddleware[$i]);
+				  	//then loop through the middleware and see if we have a match
+					  foreach ($middleware as $key => $value) {
+					  	// echo $val .' is '.$key;
+							if($val==$key) {
+						  	//check if its an array if it is we have to add them to the container individually.
+						  	$middlewareInstances[$i][]=$instanceMiddleware[$i];
+						  	if (is_array($value)) {
+						  		//first index is the middleware class and the second index is the plugin
+						  		// $middlewareInstances[$i][$instanceMiddleware[$i]];
+						  		for($j=0;$j<count($value);$j++) {
+						  			$middlewareInstances[$i][] = $value[$j];
+						  		}
+					  			// $this->app->container->add($value[0])->withArgument($value[1]);
+
+						  	} else {
+						  		//just a middleware class. This class will extend from another and doesnt need the plugin portion
+					  			// $this->app->container->add($value);
+					  			$middlewareInstances[$i][] = $value;
+						  	}
+						  }
+					  }
+					  $i++;
+				  }
+				  // $middlewareInstance = $this->app->container->get('Betasyntax\Router\MiddlewareService');
+				  // $middlewareInstance->init(new InteropResolver($this->app->container));
+				  var_dump($middlewareInstances);
+				  // $cnt=0;
+				  // foreach ($middlewareInstances as $key => $value) {
+				  // 	// var_dump($middlewareInstances[$cnt][1]);
+				  // 	$middlewareInstance->add($middlewareInstances[$cnt][1]);
+				  // 	$cnt++;
+				  // }
+				  
+			  	// $middlewareInstance->printStack();
+			  	$method = $_SERVER['REQUEST_METHOD'];
+			  	$request = new Request($method,$requestUrl);
+			  	$response = new Response;
+			  	$t = function() {};
+			  	// var_dump($response);
+				  // 	$middlewareInstance->dispatch($request,$response);
+			  	// $middlewareInstance->add([Betasyntax\Logger\Logger::class,Betasyntax\Authentication::class]);
+			  	// $middlewareInstance->printStack();
+			  	// $middlewareInstance->dispatch($request,$response);
+			  	$test=$this->app->container->get('Betasyntax\Logger\Logger');
+			  	var_dump($test);
+			  	// $test->handle($request,$t);
+
+				  echo "</pre>";
+
 				} else {
 				  header($_SERVER["SERVER_PROTOCOL"] . ' 404 Not Found');
 				}

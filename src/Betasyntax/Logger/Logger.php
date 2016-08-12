@@ -1,9 +1,16 @@
 <?php namespace Betasyntax\Logger;
 
-class Logger
+use Closure;
+use Betasyntax\Core\Interfaces\Router\Middleware;
+
+class Logger implements Middleware
 {
-    public function log($info)
+    public function __invoke($request,$reponse, Closure $next)
     {
-        echo "LOG: $info\n";
+        echo 'logger';
+
+        return $next($request);
     }
+
+
 }

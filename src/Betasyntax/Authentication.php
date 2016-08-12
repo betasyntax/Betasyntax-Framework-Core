@@ -1,5 +1,6 @@
 <?php namespace Betasyntax;
 
+use Closure;
 use App\Models\User;
 
 Class Authentication
@@ -13,6 +14,12 @@ Class Authentication
   public function __construct(){
     if(!isset(app()->session->isLoggedIn))
       app()->session->isLoggedIn=0;
+  }
+
+  public function handle($request, Closure $next)
+  {
+
+    return $next($request);
   }
 
   public function isLoggedIn() {
