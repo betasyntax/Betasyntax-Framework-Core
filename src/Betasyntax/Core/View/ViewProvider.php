@@ -1,16 +1,30 @@
-<?php namespace Betasyntax\Core\Config\View;
+<?php namespace Betasyntax\Core\View;
 
 use Betasyntax\Core\Application;
 
 Class ViewProvider
 {
-  public function __construct(Application $app)
+  protected $app;
+
+  public function __construct()
+  {    
+    $app = new Application;
+    if($app->getInstance()!=NULL) {
+      $this->app = $app::getInstance();
+    } else {
+      $this->app = $app;
+    }
+  }
+
+  public function render($view,$data) {
+    echo $this->twig->render($view,$data);
+  }
+
+  public function loadHelpers()
   {
-    $className = sprintf("\\Betasyntax\\Db\\Adapter\\%s", $config->driver);
-    if (class_exists($className)) {
-      $adapter = new $className();
-      $adapter->connect($config);
-      return $adapter;
+    $helpers = new \App\Helpers;
+    foreach ($helpers::helpers() as $helper => $func) {
+      $this->twig->addFunction($func);
     }
   }
 }

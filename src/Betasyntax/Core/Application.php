@@ -24,6 +24,7 @@ class Application
   public $auth;
   public $response;
   public $logger;
+  public $debugbar;
 
   /**
    * The registered type aliases.

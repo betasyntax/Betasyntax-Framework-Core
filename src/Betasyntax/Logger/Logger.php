@@ -14,26 +14,17 @@ class Logger
 
     public function __construct()
     {
-      $this->app = app()->getInstance();
+      $app = app()->getInstance();
       $this->logger = new Monolog('app');
       try {
-        $this->logger->pushHandler(new StreamHandler($this->app->getBasePath().'/../storage/logs/app.log', Monolog::DEBUG));
+        $this->logger->pushHandler(new StreamHandler($app->getBasePath().'/../storage/logs/app.log', Monolog::DEBUG));
         $this->logger->pushHandler(new FirePHPHandler());
       } catch (Exception $e) {
       }
     }
 
-    public function log($type, $text) 
+    public function log($type, $text, $array = array()) 
     {
-      $this->logger->$type($text, array('username' => 'Seldaek'));
+      $this->logger->$type($text, $array);
     }
-
-    // public function __invoke(Request $request, Response $response, callable $next)
-    // {
-    //     $this->__construct();
-
-    //     return $next($request, $response);
-    // }
-
-
 }

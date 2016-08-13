@@ -10,6 +10,7 @@ class BaseController
   protected $flash = null;
   protected $middleware = [];
   protected $debugbar;
+  protected $app;
 
   public function __construct()
   {
@@ -20,5 +21,10 @@ class BaseController
   public function getMiddleware()
   {
     return $this->middleware;
+  }
+
+  public function app()
+  {    
+    return app()->getInstance();
   }
 }
