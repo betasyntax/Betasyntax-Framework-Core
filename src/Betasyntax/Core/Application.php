@@ -23,6 +23,7 @@ class Application
   public $flash;
   public $auth;
   public $response;
+  public $logger;
 
   /**
    * The registered type aliases.

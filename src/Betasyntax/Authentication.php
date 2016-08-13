@@ -1,6 +1,7 @@
 <?php namespace Betasyntax;
 
-use Closure;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use App\Models\User;
 
 Class Authentication
@@ -16,10 +17,11 @@ Class Authentication
       app()->session->isLoggedIn=0;
   }
 
-  public function handle($request, Closure $next)
+  public function __invoke(Request $request, Response $response, callable $next)
   {
-
-    return $next($request);
+    if(!$this->isLoggedIn())
+      redirect('/login');
+    return $next($request, $response);
   }
 
   public function isLoggedIn() {

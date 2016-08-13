@@ -11,6 +11,6 @@ interface Middleware {
    * @param  \Closure  $next
    * @return mixed
    */
-  public function __invoke($request, $response, Closure $next);
+  public function __invoke(Request $request, Response $response, callable $next);
 
 }
