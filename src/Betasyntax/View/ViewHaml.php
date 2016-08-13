@@ -44,8 +44,12 @@ Class ViewHaml
 
   public function loadHelpers()
   {
-    $test = include $this->app->getBasePath()."/../app/helpers.php";
-    var_dump($test);
+    // $test = include $this->app->getBasePath()."/../app/helpers.php";
+    $helpers = new \App\Helpers;
+    // var_dump($test->getHelpers());
+    foreach ($helpers::getHelpers() as $helper => $func) {
+      $this->twig->addFunction($func);
+    }
     // $wayfinder = new \Twig_SimpleFunction('Wayfinder', function ($slug) {
     //   Wayfinder::_setSlug($slug);
     //   $data = Wayfinder::tree(0);
