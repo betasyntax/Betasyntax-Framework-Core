@@ -17,19 +17,23 @@ class Logger
       $this->app = app()->getInstance();
       $this->logger = new Monolog('app');
       try {
-        $this->logger->pushHandler(new StreamHandler($this->app->getBasePath().'/../storage/logs/apsp.log', Monolog::DEBUG));
+        $this->logger->pushHandler(new StreamHandler($this->app->getBasePath().'/../storage/logs/app.log', Monolog::DEBUG));
         $this->logger->pushHandler(new FirePHPHandler());
-        $this->logger->addInfo('My logger is now ready');
       } catch (Exception $e) {
       }
     }
 
-    public function __invoke(Request $request, Response $response, callable $next)
+    public function log($type, $text) 
     {
-        $this->__construct();
-
-        return $next($request, $response);
+      $this->logger->$type($text, array('username' => 'Seldaek'));
     }
+
+    // public function __invoke(Request $request, Response $response, callable $next)
+    // {
+    //     $this->__construct();
+
+    //     return $next($request, $response);
+    // }
 
 
 }

@@ -1,11 +1,10 @@
-<?php
-
-namespace Betasyntax;
+<?php namespace Betasyntax;
 
 use Betasyntax\Db\DbFactory;
 use Betasyntax\Database;
 use Exception;
 use StdClass;
+use Betasyntax\Logger\Logger;
 
 // include '/mnt/html/dev1/config/Database.php';
 
@@ -102,8 +101,14 @@ class BaseModel
   public function __construct ($config = false) 
   {
     $app = app()->getInstance();
+    // var_dump($app->logger);
+    // echo "<pre>";
+    // var_dump($app->logger->log('info','test'));
+    // // $app->logger->info('Bar');
+    // echo "</pre>";
     if (!$config){
-      $dbconfig = config('mysql');
+      $dbtype = config('default_db');
+      $dbconfig = config($dbtype);
       $config = new Database;
       $config->driver = $dbconfig['driver'];
       $config->host = $dbconfig['host'];
@@ -111,11 +116,9 @@ class BaseModel
       $config->password = $dbconfig['pass'];
       $config->dbscheme = $dbconfig['schema'];
     }
-
     self::$db = DbFactory::connect($config);
-    // var_dump(self::$db);
     if (! self::$db) {
-      die('Error connecting to database. Please check your settings');
+      flash()->error('Error connecting to database. Please check your settings');
       // redirect('/login');
     }
     restore_exception_handler();

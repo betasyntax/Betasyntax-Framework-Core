@@ -1,7 +1,6 @@
 <?php 
 namespace Betasyntax\Router;
 
-
 class BaseController
 {  
   public $domain = ''; // default auth domain
@@ -10,6 +9,7 @@ class BaseController
   protected $session;
   protected $flash = null;
   protected $middleware = [];
+  protected $debugbar;
 
   public function __construct()
   {

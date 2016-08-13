@@ -44,6 +44,7 @@ Class View
 
   public function loadHelpers()
   {
+    include \App\helpers;
     $wayfinder = new \Twig_SimpleFunction('Wayfinder', function ($slug) {
       Wayfinder::_setSlug($slug);
       $data = Wayfinder::tree(0);

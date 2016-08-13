@@ -1,32 +1,104 @@
 <?php
-namespace Betasyntax;
+use App\Models\User;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use Betasyntax\Core\Application;
+use Plasticbrain\FlashMessages\FlashMessages;
 
-class Functions
-{ 
-
-  public static function dd()
+if ( ! function_exists('app'))
+{
+  /**
+   * Get the available container instance.
+   *
+   * @param  string  $make
+   * @param  array   $parameters
+   * @return 
+   */
+  function app()
   {
-    $args = func_get_args();
-    echo '<pre>';
-    call_user_func_array('var_dump', $args);
-    echo '</pre>';
+    return Betasyntax\Core\Application::getInstance();
   }
+}
 
-  public static function strpos_array($haystack, $needles) 
+if (!function_exists('config'))
+{
+  /**
+   * Get the config object.
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return 
+   */
+  function config($key)
   {
-    if (is_array($needles)) {
-      foreach ($needles as $str) {
-        if (is_array($str)) {
-          $pos = strpos_array($haystack, $str);
-        } else {
-          $pos = strpos($haystack, $str);
-        }
-        if ($pos !== FALSE) {
-          return TRUE;
-        }
-      }
-    } else {
-      return strpos($haystack, $needles);
-    }
+    $config = app()->config;
+    return $config->conf[$key];
+  }
+}
+if (!function_exists('view'))
+{
+  /**
+   * Get the evaluated view contents for the given view.
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return 
+   */
+  function view($view = null, $data = array())
+  {
+    $twig = app()->container->get(app()->getViewObjectStr());
+    $twig->loadHelpers();
+    $twig->render($view,$data);
+  }
+}
+
+if (!function_exists('dd'))
+{
+  /**
+   * Return dd in the view
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return 
+   */
+  function dd($view = null, $data = array())
+  {
+    echo app()->util->dd($data);
+  }
+}
+
+if ( ! function_exists('flash'))
+{
+  /**
+   * Show the flash
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return \Illuminate\View\View
+   */
+  function flash()
+  {
+    $flash = new FlashMessages();
+    return $flash;
+  }
+}
+
+if ( ! function_exists('redirect'))
+{
+  /**
+   * Get the evaluated view contents for the given view.
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return \Illuminate\View\View
+   */
+  function redirect($url='/')
+  {
+    return app()->response->redirect($url);
   }
 }

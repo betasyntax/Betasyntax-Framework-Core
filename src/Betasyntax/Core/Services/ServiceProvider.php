@@ -63,7 +63,7 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
 
         // these are the core of the system. They can't be overwritten
         $this->app->config = $this->container->get('Betasyntax\Config');
-        $this->app->util = $this->container->get('Betasyntax\Functions');
+        // $this->app->util = $this->container->get('Betasyntax\Functions');
         $this->app->response = $this->container->get('Betasyntax\Response');
         $this->app->logger = $this->container->get('Betasyntax\Logger\Logger');
 

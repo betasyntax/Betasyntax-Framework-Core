@@ -13,7 +13,7 @@ class Wayfinder
 
   public static function getMenu($parent_id)
   {
-    $sql = 'SELECT * FROM menus WHERE parent_id = '.$parent_id.' AND status = "enabled" ORDER BY site_order;';
+    $sql = "SELECT * FROM menus WHERE parent_id = ".$parent_id." AND status = 'enabled' ORDER BY site_order;";
     self::$cnt++;
     return Menu::raw($sql);
   }

@@ -28,8 +28,8 @@ Class ViewHaml
 
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
     $hamll = new HamlLoader($haml, $twigLoader);
-    $this->twig = new \Twig_Environment($hamll);
-
+    $this->twig = new \Twig_Environment($hamll, array('auto_reload' => true));
+    $this->twig->clearCacheFiles();
     $this->twig->addExtension(new HamlExt());
     $this->loadHelpers();
   }
@@ -44,14 +44,16 @@ Class ViewHaml
 
   public function loadHelpers()
   {
-    $wayfinder = new \Twig_SimpleFunction('Wayfinder', function ($slug) {
-      Wayfinder::_setSlug($slug);
-      $data = Wayfinder::tree(0);
-    });
-    $flash = new \Twig_SimpleFunction('flash', function () {
-      echo flash()->display(null,false);
-    });
-    $this->twig->addFunction($flash);
-    $this->twig->addFunction($wayfinder);
+    $test = include $this->app->getBasePath()."/../app/helpers.php";
+    var_dump($test);
+    // $wayfinder = new \Twig_SimpleFunction('Wayfinder', function ($slug) {
+    //   Wayfinder::_setSlug($slug);
+    //   $data = Wayfinder::tree(0);
+    // });
+    // $flash = new \Twig_SimpleFunction('flash', function () {
+    //   echo flash()->display(null,false);
+    // });
+    // $this->twig->addFunction($flash);
+    // $this->twig->addFunction($wayfinder);
   }
 }

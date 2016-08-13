@@ -7,15 +7,15 @@ use Betasyntax\Database;
 /**
  * MySQLi Pdo
  */
-class Mysql implements AdapterInterface
+class Pgsql implements AdapterInterface
 {
   private $_dbh;
   public $_rec_set;
 
   public function connect(Database $config)
   {
-    $dsn = sprintf('mysql:dbname=%s;host=%s', $config->dbscheme, $config->host);
-    $this->_dbh = new PDO($dsn, $config->user, $config->password, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode="ALLOW_INVALID_DATES"'));
+    $dsn = sprintf('pgsql:dbname=%s;host=%s', $config->dbscheme, $config->host);
+    $this->_dbh = new PDO($dsn, $config->user, $config->password, array());
   }
   public function fetch($sql)
   {
@@ -23,7 +23,7 @@ class Mysql implements AdapterInterface
     $sth->execute();
     $sth->setFetchMode(PDO::FETCH_OBJ);
     $this->_rec_set = $sth->fetchAll();
-    return $this->_rec_set;  
+    return $this->_rec_set; 
   }
   public function execute($sql)
   {
