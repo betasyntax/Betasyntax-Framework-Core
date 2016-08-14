@@ -14,7 +14,7 @@ class Logger
 
     public function __construct()
     {
-      $app = app()->getInstance();
+      $app = app();
       $this->logger = new Monolog('app');
       try {
         $this->logger->pushHandler(new StreamHandler($app->getBasePath().'/../storage/logs/app.log', Monolog::DEBUG));

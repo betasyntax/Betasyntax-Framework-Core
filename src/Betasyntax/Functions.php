@@ -36,6 +36,24 @@ if (!function_exists('config'))
     return $config->conf[$key];
   }
 }
+
+if (!function_exists('env'))
+{
+  /**
+   * Get the config object.
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return 
+   */
+  function env($key)
+  {
+    $config = app()->env;
+    return $config->env[$key];
+  }
+}
+
 if (!function_exists('view'))
 {
   /**

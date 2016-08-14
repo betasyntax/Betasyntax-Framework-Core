@@ -66,6 +66,7 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
         // $this->app->util = $this->container->get('Betasyntax\Functions');
         $this->app->response = $this->container->get('Betasyntax\Response');
         $this->app->logger = $this->container->get('Betasyntax\Logger\Logger');
+        $this->app->router = $this->container->get('Betasyntax\Router\Router');
         $this->app->debugbar = $this->container->get('Betasyntax\DebugBar\DebugBar');
 
         // register any user provided middlewares

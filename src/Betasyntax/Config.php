@@ -9,7 +9,7 @@ class Config {
     public $conf;
 
     public function __construct() {
-      $this->app = app()->getInstance();
+      $this->app = app();
       $this->conf = Conf::load($this->app->getBasePath().'/../config/config.php');
     }
 }

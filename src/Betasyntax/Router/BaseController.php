@@ -1,6 +1,7 @@
 <?php 
 namespace Betasyntax\Router;
 
+
 class BaseController
 {  
   public $domain = ''; // default auth domain
@@ -25,6 +26,11 @@ class BaseController
 
   public function app()
   {    
-    return app()->getInstance();
+    return app();
+  }
+
+  public function request()
+  {
+    
   }
 }

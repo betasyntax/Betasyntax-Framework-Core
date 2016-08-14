@@ -100,7 +100,7 @@ class BaseModel
    */
   public function __construct ($config = false) 
   {
-    $app = app()->getInstance();
+    $app = app();
     // var_dump($app->logger);
     // echo "<pre>";
     // var_dump($app->logger->log('info','test'));
