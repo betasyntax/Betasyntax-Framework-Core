@@ -38,6 +38,11 @@ class Logger
 
     public function log($type, $text, $array = array()) 
     {
-      $this->logger->$type($text, $array);
+      try {
+        $this->logger->$type($text, $array);
+      } catch (Exception $e) {
+        $app = app()->debugbar;
+        $app::$debugbar['exceptions']->addException($e);
+      }
     }
 }
