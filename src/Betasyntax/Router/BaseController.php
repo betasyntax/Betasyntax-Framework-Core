@@ -15,8 +15,6 @@ class BaseController
 
   public function __construct()
   {
-    // error_log($this->middleware);
-    // var_dump($this->middleware);
   }
 
   public function getMiddleware()

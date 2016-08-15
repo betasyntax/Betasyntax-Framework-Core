@@ -119,6 +119,11 @@ class Application
    * @var array
    */
   protected $aliases = [];
+  public $pdo;
+  public $pdo_queries = [];
+  public $pdo_records = [];
+  public $trace;
+  public $twig;
 
   /**
    * Create a new Illuminate application instance.
@@ -143,6 +148,7 @@ class Application
     $this->appProviders = $this->getProvidersArray();
     //boot the app
     $this->boot();
+
   }
 
   /**
@@ -175,7 +181,6 @@ class Application
   {
     $this->appConf = include $this->basePath.'/../config/app.php';
   }
-
   public function conf($key)
   {
     return $this->appConf[$key];
@@ -216,7 +221,8 @@ class Application
     // create the container instance
     $this->container = new AppContainer;    
     //boot the app and registers any middlewhere
-    $this->container->addServiceProvider(new ServiceProvider($this,$this->getProvidersArray()));    
+    $this->container->addServiceProvider(new ServiceProvider($this,$this->getProvidersArray())); 
+
   }
 
   public function router()

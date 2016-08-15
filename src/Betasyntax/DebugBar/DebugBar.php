@@ -1,11 +1,14 @@
 <?php namespace Betasyntax\DebugBar;
 
+use ReflectionClass;
+
 Class DebugBar
 {
   protected static $instance;
-  protected static $debugbar;
+  public static $debugbar;
   protected static $jsRender;
   protected static $stack;
+  protected static $collectors = [];
 
   public function __construct() {
     if(static::$instance==null) {
@@ -13,7 +16,7 @@ Class DebugBar
     }
     static::$debugbar = new \DebugBar\StandardDebugBar(); 
     $this->jsRender('/debug');
-    $this->addMessage('DebugBar Loaded');
+    static::$debugbar['time']->startMeasure('View', 'View operation');
   }
 
   static function getInstance()
@@ -21,28 +24,77 @@ Class DebugBar
     return static::$instance;
   }
 
-  public function init()
-  {
-  }
   public function jsRender()
   {
-    return static::$jsRender = static::$debugbar->getJavascriptRenderer('/debug');
+    // static::$debugbar["messages"]->addMessage('DebugBar Loaded:');
+    static::$debugbar["messages"]->addMessage('Environment '.app()->env['env']);
+    $x =  static::$debugbar->getJavascriptRenderer('/debug');
+    return static::$jsRender = $x;
   }
-  public function addMessage($message)
+
+  public function time($status,$name,$desc='')
   {
-    // $this->getInstance();
-    static::$stack[] = $message;
+    if($status='start') {
+      static::$debugbar['time']->startMeasure($name, $desc);
+    } else {
+      static::$debugbar['time']->stopMeasure($name);
+    }
   }
+
+  public function message($type = 'addMessage', $value, $object = null)
+  {
+    if($object==null && ($type=='addMessage'||$type=='info')) {
+      $class='Debug: ';
+      static::$stack[$type][] = $class.$value;
+    } else {
+      $class = get_class($object);
+      // echo $class;
+      $reflector = new ReflectionClass($class);
+      $class = $reflector->getFileName().': ';
+      static::$stack[$type][] = $class.$value;
+    }
+    
+  }
+
+  public function addCollector($object)
+  {
+    $class = get_class($object);
+    if(!in_array($class,static::$collectors)) {
+      static::$collectors[] = $class;
+      static::$debugbar->addCollector($object);
+    }
+  }
+
+  public function exception($value)
+  {
+    static::$debugbar['exceptions']->addException($value);
+  }
+
   public function getJsRender()
   {
+    $this->time('stop','View');
+    $this->time('stop','Application');
+    // static::$debugbar['time']->stopMeasure('View');
+    // static::$debugbar['time']->stopMeasure('Application');
     return static::$jsRender;
   }
 
   public function render()
   {
-    foreach (static::$stack as $message) {
-      static::$debugbar["messages"]->addMessage($message);
-    }
+
+    if(is_array(static::$stack)){
+        foreach (static::$stack as $type => $value) {
+          if(is_array($value)) {
+            foreach ($value as $key => $val) {
+              if($type=='info'||$type=='addMessage') {
+                static::$debugbar["messages"]->{$type}($val);
+              } else {
+                static::$debugbar["messages"]->{$type}($val[1]);
+              }
+            }
+          }
+    
+        }}
     return static::$jsRender->render();
   }
 }

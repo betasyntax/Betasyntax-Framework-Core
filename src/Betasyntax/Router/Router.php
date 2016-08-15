@@ -272,6 +272,13 @@ class Router {
 				  //include the source file
 				  include $this->controllersDir . str_replace('\\', '/', $target[1]) . '.php';
 				  //instantiate the class
+        	// app()->trace = debug_backtrace();
+        	// $deb = debugbar();
+        	// dd($deb::$debugbar);
+        	// $t = debug_print_backtrace(0,1);
+        	// dd($t);
+					// $deb = $deb::getInstance();        	
+    	    // $deb::$debugbar["messages"]->addMessage('View Stack Trace <br>'.stackTrace($t));
 				  $instance = new $class();
 
 				  //this is where we will place our middleware. first check to see if the there is an alias in 
@@ -323,6 +330,7 @@ class Router {
 
 					$response = $relay($request, $response);
 				  $instance->$method($mm['params']);
+
 
 				} else {
 				  header($_SERVER["SERVER_PROTOCOL"] . ' 404 Not Found');

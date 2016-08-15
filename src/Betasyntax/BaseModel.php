@@ -6,8 +6,6 @@ use Exception;
 use StdClass;
 use Betasyntax\Logger\Logger;
 
-// include '/mnt/html/dev1/config/Database.php';
-
 class BaseModel  
 {
   /* Configuration */
@@ -101,11 +99,6 @@ class BaseModel
   public function __construct ($config = false) 
   {
     $app = app();
-    // var_dump($app->logger);
-    // echo "<pre>";
-    // var_dump($app->logger->log('info','test'));
-    // // $app->logger->info('Bar');
-    // echo "</pre>";
     if (!$config){
       $dbtype = config('default_db');
       $dbconfig = config($dbtype);
@@ -117,12 +110,11 @@ class BaseModel
       $config->dbscheme = $dbconfig['schema'];
     }
     self::$db = DbFactory::connect($config);
-    if (! self::$db) {
+    if ( ! self::$db) {
       flash()->error('Error connecting to database. Please check your settings');
-      // redirect('/login');
     }
     restore_exception_handler();
-    self::$info = (object) array( self::$arguments);
+    self::$info = (object) array(self::$arguments);
     unset(self::$info->password);
   }
 
@@ -216,9 +208,6 @@ class BaseModel
   {
     $class = get_called_class();
     $vowels = array('a','e','i','o');
-    // var_dump($class);
-    // var_dump($class[strlen($class)-1]);
-    // var_dump(in_array($class[strlen($class)-1], $vowels));
     if ($class[strlen($class)-1]=='y' ) {
       $class = str_replace('y', 'ies', $class);
     } else {
@@ -226,7 +215,6 @@ class BaseModel
     }
     $class = preg_replace('/\B([A-Z])/', '_$1', $class);
     $class = explode('\\', strtolower($class));
-    // var_dump(end($class));
     return end($class);
   }
 
@@ -244,11 +232,11 @@ class BaseModel
     return self::_getResult($sql);
   }
   //same as above?!
-  public static function query($sql) 
-  {
-    self::instance();
-    return self::_getResult($sql);
-  }
+  // public static function query($sql) 
+  // {
+  //   self::instance();
+  //   return self::_getResult($sql);
+  // }
 
   public static function exec($sql) 
   {
@@ -307,22 +295,20 @@ class BaseModel
   { 
     self::instance();
     $sql = self::_getSql($join_type,$foreign_table,$id);
-    // var_dump($sql);  
     return self::_getResult($sql);
   }
 
   private static function _getResult($sql)
   {
-    self::$result = self::$db->fetch( $sql );
+    self::$result = self::$db->fetch($sql);
     self::$c = self::$result;
-    
     if (count(self::$result)==1) {
       return (object) self::$result[0];
     } else {
       return self::$result;
     }
   }
-  
+
   private static function _getSql($join_type='',$foreign_table='',$where='',$limit='')
   {
     $join_sql = '';

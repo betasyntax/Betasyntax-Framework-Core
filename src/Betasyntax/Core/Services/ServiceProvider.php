@@ -60,7 +60,7 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
         $this->getContainer()->delegate(
           new \League\Container\ReflectionContainer
         );
-
+        $this->app->trace = debug_backtrace();
         // these are the core of the system. They can't be overwritten
         $this->app->config = $this->container->get('Betasyntax\Config');
         // $this->app->util = $this->container->get('Betasyntax\Functions');
@@ -68,8 +68,10 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
         $this->app->logger = $this->container->get('Betasyntax\Logger\Logger');
         $this->app->router = $this->container->get('Betasyntax\Router\Router');
         $this->app->debugbar = $this->container->get('Betasyntax\DebugBar\DebugBar');
-
+        
         // register any user provided middlewares
+        debugStack('Application');
+        // 
         $this->register();
     }
 

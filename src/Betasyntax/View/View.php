@@ -15,7 +15,7 @@ Class View
 
   public function __construct()
   {
-    $path = '/mnt/html/dev1/app/Views/';
+    $path = app()->getBasePath().'/../app/Views/';
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
     $this->twig = new \Twig_Environment($twigLoader);
     $this->loadHelpers();

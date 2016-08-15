@@ -16,14 +16,17 @@ Class ViewHaml extends ViewProvider
 
   public function __construct()
   {
-    $path = '/mnt/html/dev1/app/Views/';
+    $path = app()->getBasePath().'/../app/Views/';
     $haml = new HamlEnv('twig');
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
     $hamll = new HamlLoader($haml, $twigLoader);
-    $this->twig = new \Twig_Environment($hamll, array('auto_reload' => true));
+    $this->twig = new \Twig_Environment($hamll, array('auto_reload' => true,'debug' => true));
+
     $this->twig->clearCacheFiles();
     $this->twig->addExtension(new HamlExt());
+
     $this->loadHelpers();
+    $this->loadLocalHelpers();
   }
 
 
