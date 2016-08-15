@@ -48,7 +48,6 @@ class CoreHelpers
     });
 
     $flash = new \Twig_SimpleFunction('flash', function () {
-      error_log("test");
       echo flash()->display(null,false);
     });
 

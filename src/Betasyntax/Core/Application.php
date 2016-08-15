@@ -170,7 +170,7 @@ class Application
 
   private function getEnvironment()
   {
-    $env = new \Dotenv\Dotenv($this->basePath.'/../');
+    $env = new \Dotenv\Dotenv($this->basePath);
     $env->load();
     $this->env['env'] = getenv('APP_ENV');
     $this->env['debug'] = getenv('APP_DEBUG');
@@ -179,7 +179,7 @@ class Application
 
   private function getConfArray()
   {
-    $this->appConf = include $this->basePath.'/../config/app.php';
+    $this->appConf = include $this->basePath.'/config/app.php';
   }
   public function conf($key)
   {

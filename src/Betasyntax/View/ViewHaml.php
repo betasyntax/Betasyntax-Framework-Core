@@ -16,7 +16,7 @@ Class ViewHaml extends ViewProvider
 
   public function __construct()
   {
-    $path = app()->getBasePath().'/../app/Views/';
+    $path = app()->getBasePath().'/app/Views/';
     $haml = new HamlEnv('twig');
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
     $hamll = new HamlLoader($haml, $twigLoader);

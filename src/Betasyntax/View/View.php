@@ -15,9 +15,13 @@ Class View
 
   public function __construct()
   {
-    $path = app()->getBasePath().'/../app/Views/';
+    $path = app()->getBasePath().'/app/Views/';
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
     $this->twig = new \Twig_Environment($twigLoader);
+
+    $this->twig->clearCacheFiles();
+
     $this->loadHelpers();
+    $this->loadLocalHelpers();
   }
 }
