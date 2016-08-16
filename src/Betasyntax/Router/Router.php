@@ -13,7 +13,7 @@ class Router {
 	 */
 	protected $routes = array();
 	protected $app;
-  protected $appMiddleware;
+  	protected $appMiddleware;
 
 	protected $controllersDir;
 	protected $routeFound = false;
