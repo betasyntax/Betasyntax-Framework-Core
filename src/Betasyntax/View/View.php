@@ -6,6 +6,7 @@ use MtHaml\Support\Twig\Loader as HamlLoader;
 use MtHaml\Support\Twig\Extension as HamlExt;
 use Betasyntax\Core\Interfaces\View\ViewInterface;
 use Betasyntax\Wayfinder;
+use Betasyntax\Core\View\ViewProvider;
 
 Class View
 {

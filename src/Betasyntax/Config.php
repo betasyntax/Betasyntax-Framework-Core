@@ -11,5 +11,7 @@ class Config {
     $this->conf['app'] = Conf::load($basepath.'app.php');
     $this->conf['db'] = Conf::load($basepath.'db.php');
     $this->conf['email'] = Conf::load($basepath.'email.php');
+    $this->conf['mounts'] = Conf::load($basepath.'mounts.php');
+
   }
 }

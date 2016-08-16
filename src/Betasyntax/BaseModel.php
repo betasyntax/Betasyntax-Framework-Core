@@ -233,12 +233,6 @@ class BaseModel
     self::instance();
     return self::_getResult($sql);
   }
-  //same as above?!
-  // public static function query($sql) 
-  // {
-  //   self::instance();
-  //   return self::_getResult($sql);
-  // }
 
   public static function exec($sql) 
   {

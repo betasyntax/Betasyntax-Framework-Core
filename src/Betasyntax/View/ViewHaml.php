@@ -20,7 +20,7 @@ Class ViewHaml extends ViewProvider
     $haml = new HamlEnv('twig');
     $twigLoader = new \Twig_Loader_Filesystem(array($path));
     $hamll = new HamlLoader($haml, $twigLoader);
-    $this->twig = new \Twig_Environment($hamll, array('auto_reload' => true,'debug' => true));
+    $this->twig = new \Twig_Environment($hamll);
 
     $this->twig->clearCacheFiles();
     $this->twig->addExtension(new HamlExt());

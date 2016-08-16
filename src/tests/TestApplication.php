@@ -7,6 +7,9 @@ Class TestApplicationBoot extends TestCase
 {  
   public $app;
 
+  /**
+   * @runInSeparateProcess
+   */
   public function testCase()
   {
     require __DIR__.'/../../../../../vendor/autoload.php';
@@ -22,15 +25,5 @@ Class TestApplicationBoot extends TestCase
     $this->assertObjectHasAttribute('session', $app);
     $this->assertObjectHasAttribute('flash', $app);
     $this->assertObjectHasAttribute('auth', $app);
-
   }
-  // public function testServiceProvidersAreCorrectlyRegistered()
-  //   {
-  //       $provider = m::mock('Betasyntax\Core\Services\ServiceProvider');
-  //       $class = get_class($provider);
-  //       $provider->shouldReceive('register')->once();
-  //       $app = new Application;
-  //       $app->register($provider);
-  //       $this->assertTrue(in_array($class, $app->getLoadedProviders()));
-  //   }
 }

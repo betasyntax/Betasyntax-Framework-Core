@@ -27,21 +27,26 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
      * [__construct Include the main app object so we can Inject the app instance into our classes as needed.]
      * @param Application $app [Application Class]
      */
-    public function __construct(Application $app, $providers) 
+    public function __construct(Application $app) 
     {
-        // set the app object
         $this->app = $app;
-        // populate the provides array. This will be our providers list
-        $this->providers = $providers;
-        $this->setProviders($this->providers);
     }
 
+    /**
+     * Set the appProviders in the main application object and set the provides array for registering the sevice providers
+     * @param [type] $providers [description]
+     */
     private function setProviders($providers) {
         foreach ($providers as $key => $value) {
             $this->provides[] = $value;
+            $this->app->appProviders[] = [$key=>$value];
         }
     }
 
+    private function getProviders()
+    {
+        return $serviceProviders = config('app','providers');
+    }
     /**
      * In much the same way, this method has access to the container
      * itself and can interact with it however you wish, the difference
@@ -59,18 +64,18 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
         $this->getContainer()->delegate(
           new \League\Container\ReflectionContainer
         );
-        $this->app->trace = debug_backtrace();
-        $this->app->debugbar = $this->container->get('Betasyntax\DebugBar\DebugBar');
-        // these are the core of the system. They can't be overwritten
+        // these are the core of the system. 
+        // Only load debug bar in production mode
+        if(!$this->app->isProd()) {
+            $this->app->debugbar = $this->container->get('Betasyntax\DebugBar\DebugBar');
+            debugStack('Application');
+        }
         $this->app->config = $this->container->get('Betasyntax\Config');
         $this->app->mountManager = $this->container->get('Betasyntax\Core\MountManager\Mounts');
-        $this->app->response = $this->container->get('Betasyntax\Response');
         $this->app->logger = $this->container->get('Betasyntax\Logger\Logger');
-        $this->app->router = $this->container->get('Betasyntax\Router\Router');
-        
-        debugStack('Application');
+        $this->app->router = $this->container->get('Betasyntax\Router\Router');  
+        // debug the application object
         // register any user provided middlewares
-        // 
         $this->register();
     }
 
@@ -82,7 +87,8 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
      */
     public function register()
     {   
-        // dynamically register anything in /config/app.php array
+        //register the rest of the service providers
+        $this->setProviders($this->getProviders());
         for($i=0;$i<count($this->provides);$i++) {
             $this->getContainer()->add($this->provides[$i]);
         }

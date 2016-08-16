@@ -1,10 +1,10 @@
 <?php namespace Betasyntax\Core;
 
 use Closure;
-use Betasyntax\Core\Container\Container as BaseContainer;
-use League\Container\Container as AppContainer;
-use Betasyntax\Core\Services\ServiceProvider;
 use Betasyntax\Session;
+use Betasyntax\Core\Services\ServiceProvider;
+use League\Container\Container as AppContainer;
+use Betasyntax\Core\Container\Container as BaseContainer;
 
 /**
  * Main Application class
@@ -42,10 +42,17 @@ class Application
   protected $appConf;
 
   /**
+   * The registered type aliases.
+   *
+   * @var array
+   */
+  protected $aliases = [];
+
+  /**
    * Holds all the core component references for the application
    * @var array
    */
-  protected $appProviders;
+  public $appProviders;
 
   /**
    * The main container object league/container
@@ -114,16 +121,10 @@ class Application
   public $env = [];
 
   /**
-   * The registered type aliases.
-   *
-   * @var array
+   * Holds our backtrace object so we can view our stacks
+   * @var string
    */
-  protected $aliases = [];
-  public $pdo;
-  public $pdo_queries = [];
-  public $pdo_records = [];
   public $trace;
-  public $twig;
 
   /**
    * Create a new Illuminate application instance.
@@ -135,17 +136,15 @@ class Application
   public function __construct($basePath = null)
   {    
     //set the instance and store a reference to itself
-    if(static::$instance==null) {
+    if(static::$instance==null)
       static::$instance=$this;
-    }
     //set the base path so we can use it for other plugins in the system
     $this->setBasePath($basePath);
-    //get the main app config
-    $this->getConfArray();
     //configure dotenv
     $this->getEnvironment();
-    //assign the middleware array
-    $this->appProviders = $this->getProvidersArray();
+    //load the backtrace if we are in development and turn on error reporting
+    if (!$this->isProd())
+      errReporter();
     //boot the app
     $this->boot();
 
@@ -160,14 +159,22 @@ class Application
     return static::$instance;
   }
 
+  /**
+   * Returns true if in production set in your .env file. false if in local mode which should be your dev machine
+   * @return boolean
+   */
   public function isProd()
   {
     if($this->env['env']=='prod') {
-      return TRUE;
+      return true;
     }
-    return FALSE;
+    return false;
   }
 
+  /**
+   * Loads the environment from your .env file
+   * @return array
+   */
   private function getEnvironment()
   {
     $env = new \Dotenv\Dotenv($this->basePath);
@@ -177,43 +184,51 @@ class Application
     $this->env['appSecret'] = getenv('APP_KEY');
   }
 
-  private function getConfArray()
-  {
-    $this->appConf = include $this->basePath.'/config/app.php';
-  }
-  public function conf($key)
-  {
-    return $this->appConf[$key];
-  }
-
-  private function getProvidersArray()
-  {
-    return $this->appConf['providers'];
-  }
-
+  /**
+   * Get the application version number
+   * @return string
+   */
   public function getversion()
   {
     return $this->version;
   }
 
+  /**
+   * Sets the applications base path
+   * @param string $basePath holds the base path string for the application
+   */
   private function setBasePath($basePath)
   {
     $this->basePath = realpath($basePath);
   }
 
+  /**
+   * Get the base path for the app 
+   * @return string
+   */
   public function getBasePath()
   {
     return $this->basePath;
   }
 
+  /**
+   * Returns the applications view class object
+   * @return string
+   */
   public function getViewObjectStr()
   {
-    foreach ($this->appProviders as $k => $v) {
-      if ($k == 'view')
-        return $v;
+    for($i=0;$i<count($this->appProviders);$i++) {
+      foreach ($this->appProviders[$i] as $k => $v) {
+        if ($k == 'view')
+          return $v;
+      }
     }
   }
 
+  /**
+   * Application boot method. Loads the app providers and sets some default application variables
+   * @return void
+   */
   public function boot()
   {
     //start the session
@@ -221,11 +236,6 @@ class Application
     // create the container instance
     $this->container = new AppContainer;    
     //boot the app and registers any middlewhere
-    $this->container->addServiceProvider(new ServiceProvider($this,$this->getProvidersArray())); 
-
-  }
-
-  public function router()
-  {
+    $this->container->addServiceProvider(new ServiceProvider($this)); 
   }
 }

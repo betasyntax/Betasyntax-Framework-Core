@@ -16,6 +16,7 @@ class Router {
   protected $appMiddleware;
 
 	protected $controllersDir;
+	protected $routeFound = false;
 
 	/**
 	 * @var array Array of all named routes.
@@ -51,7 +52,6 @@ class Router {
 		if(!$routes) {
 			$routes = include $this->app->getBasePath().'/app/routes.php';
 		}
-
 		// get the middleware array
     $this->appMiddleware = $this->getMiddleWareArray();
     // set the controller dir
@@ -61,19 +61,30 @@ class Router {
 		// set the base path 
 		$this->setBasePath($basePath);
 		// match any types
-		$this->addMatchTypes($matchTypes);
-		
+		$this->addMatchTypes($matchTypes);		
 	}
 	
+	/**
+	 * Get the url for the link_to function from the main routes.
+	 * 
+	 * @param  string $route The route name from the link_to function
+	 * @param  array  $args  Data passed to the link_to function. Used to fill the values required by the route
+	 * @return string        Returns the newly generated url back to the link_to function
+	 */
 	public function urlHelper($route,$args=[])
 	{
 		return $this->fakeUrl($this->namedRoutes[$route],$args);
 	}
 
+	/**
+	 * Get the middle ware array
+	 * @return [type] [description]
+	 */
   private function getMiddleWareArray()
   {
-    return $this->app->conf('middleware');
+  	return config('app','middleware');
   }
+
 	/**
 	 * Retrieves all routes.
 	 * Useful if you want to process or display routes.
@@ -94,7 +105,6 @@ class Router {
 	 *
 	 * @param array $routes
 	 * @return void
-	 * @author Koen Punt
 	 * @throws Exception
 	 */
 	public function addRoutes($routes)
@@ -148,6 +158,12 @@ class Router {
 		return;
 	}
 
+	/**
+	 * Return the real url genereted from a named route
+	 * @param  string $route  The untouched route from the link_to function
+	 * @param  array  $params Data to be injected into the route
+	 * @return string         Return the generated url from the named route provided to the link_to function
+	 */
 	public function fakeUrl($route, $params)
 	{
 		if (preg_match_all('/\[[\s\S]+?]/', $route, $matches, PREG_SET_ORDER)) {
@@ -170,8 +186,6 @@ class Router {
 	 */
 	public function generate($routeName, array $params = array()) 
 	{
-		echo $routeName;
-		dd($params);
 		// Check if named route exists
 		if (!isset($this->namedRoutes[$routeName])) {
 			throw new Exception("Route '{$routeName}' does not exist.");
@@ -182,12 +196,10 @@ class Router {
 		$url = $this->basePath . $route;
 		if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER)) {
 			foreach ($matches as $match) {
-			dd($match);
 				list($block, $pre, $type, $param, $optional) = $match;
 				if ($pre) {
 					$block = substr($block, 1);
 				}
-				dd($params[$param]);
 				if (isset($params[$param])) {
 					$url = str_replace($block, $params[$param], $url);
 				} elseif ($optional) {
@@ -280,7 +292,7 @@ class Router {
 					'target' => $target,
 					'params' => $params,
 					'name' => $name
-				);						
+				);
 				if ($match) {	
 				  //we are going to change this to use all be in the router function
 				  //break up the target at the @ symbol. first part is function second is the file 
@@ -290,21 +302,12 @@ class Router {
 				  //include the source file
 				  include $this->controllersDir . str_replace('\\', '/', $target[1]) . '.php';
 				  //instantiate the class
-        	// app()->trace = debug_backtrace();
-        	// $deb = debugbar();
-        	// dd($deb::$debugbar);
-        	// $t = debug_print_backtrace(0,1);
-        	// dd($t);
-					// $deb = $deb::getInstance();        	
-    	    // $deb::$debugbar["messages"]->addMessage('View Stack Trace <br>'.stackTrace($t));
 				  $instance = new $class();
-
 				  //this is where we will place our middleware. first check to see if the there is an alias in 
 				  //the middleware array and then execute it against our controller.
 				  //get the middleware array from the instance
 				  $instanceMiddleware = $instance->getMiddleware();
 				  $middleware = $this->getMiddleWareArray();
-				  //setup locking on the command bus
 					//count the instance middleware array
 					$middlewareCnt = count($instanceMiddleware);
 				  $middlewareInstances = [];
@@ -330,32 +333,36 @@ class Router {
 						  }
 					  }
 				  }
+				  //get the request array
 			  	$requestMethod = $_SERVER['REQUEST_METHOD'];
+			  	//instantiate our request and response for Relay
 			  	$request = new Request($requestMethod,$requestUrl);
 			  	$response = new Response;
 			  	$queue = [];
-
+			  	//build the middleware queue
 			  	for($i=0;$i<count($middlewareInstances);$i++) {
 			  			$queue[] = $middlewareInstances[$i][1];
 			  	}
-
+			  	//setup the automatic resolver
 					$resolver = function ($class) {
 					    return new $class();
 					};
-
+					//build the Relay builder class
 					$relayBuilder = new RelayBuilder($resolver);
 					$relay = $relayBuilder->newInstance($queue);
-
+					//run the middleware against our controller
 					$response = $relay($request, $response);
+					//finally if all our middleware passed on the response we can then run our intended controller action
 				  $instance->$method($mm['params']);
-
-
-				} else {
-				  header($_SERVER["SERVER_PROTOCOL"] . ' 404 Not Found');
+				  $this->routeFound=true;
 				}
 			}
 		}
-		return false;
+		if(!$this->routeFound) {
+			redirect('/notfound'); 
+		} else {
+			return false;
+		}
 	}
 
 	/**

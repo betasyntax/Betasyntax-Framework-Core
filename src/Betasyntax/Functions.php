@@ -2,7 +2,6 @@
 use App\Models\User;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use Betasyntax\Core\Application;
 use Plasticbrain\FlashMessages\FlashMessages;
 
 if ( ! function_exists('app'))
@@ -10,9 +9,7 @@ if ( ! function_exists('app'))
   /**
    * Get the available container instance.
    *
-   * @param  string  $make
-   * @param  array   $parameters
-   * @return 
+   * @return application main instance
    */
   function app()
   {
@@ -20,17 +17,12 @@ if ( ! function_exists('app'))
   }
 }
 
-
-
 if (!function_exists('urlHelper'))
 {
   /**
-   * Get the config object.
+   * Returns a link for a view
    *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
+   * @return string
    */
   function urlHelper($route,$args)
   {
@@ -38,16 +30,12 @@ if (!function_exists('urlHelper'))
   }
 }
 
-
 if (!function_exists('config'))
 {
   /**
    * Get the config object.
    *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
+   * @return array
    */
   function config($file,$key)
   {
@@ -59,12 +47,9 @@ if (!function_exists('config'))
 if (!function_exists('env'))
 {
   /**
-   * Get the config object.
+   * Get environment vars set in your .env
    *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
+   * @return string
    */
   function env($key)
   {
@@ -73,83 +58,48 @@ if (!function_exists('env'))
   }
 }
 
-if (!function_exists('lsDir'))
-{
-  /**
-   * Get the config object.
-   *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
-   */
-  function lsDir($path,$recursive=false)
-  {
-    $manager = app()->mountManager->getManager();
-    return $manager->listContents($path,$recursive);
-  }
-}
-
 if (!function_exists('view'))
 {
   /**
    * Get the evaluated view contents for the given view.
    *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
+   * @return string
    */
   function view($view = null, $data = array())
   {
+    // dd(app()->getViewObjectStr());
     $twig = app()->container->get(app()->getViewObjectStr());
     $twig->loadHelpers();
     $twig->render($view,$data);
   }
 }
-
-if (!function_exists('__file_meta'))
+if (!function_exists('errReporter'))
 {
   /**
-   * Get the evaluated view contents for the given view.
+   * Turns on error reporting in local mode
    *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
+   * @return void
    */
-  function __file_meta()
+  function errReporter()
   {
-    return __FILE__ . ':~' . __LINE__ . ': ';
+    error_reporting(E_ALL);
+    ini_set('xdebug.show_exception_trace', 0);
+    ini_set('display_errors', TRUE);
+    ini_set('display_startup_errors', TRUE);
+    ini_set('xdebug.trace_format',2);
+    ini_set("html_errors", 1); 
+    ini_set("error_prepend_string", "<pre style='color: #333; font-face:monospace; font-size:8pt;'>"); 
+    ini_set("error_append_string ", "</pre>");
+    app()->trace = debug_backtrace();
   }
-}
-
-if (!function_exists('debugException'))
-{
-  /**
-   * Get the evaluated view contents for the given view.
-   *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
-   */
-  function debugException($e)
-  {
-    return app()->debugbar->exception($e);
-  }
-}
-
+} 
 
 if (!function_exists('dd'))
 {
   /**
    * Return dd in the view
    *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
+   * @return string
    */
   function dd($data)
   {
@@ -165,12 +115,9 @@ if (!function_exists('dd'))
 if (!function_exists('debugbar'))
 {
   /**
-   * Return dd in the view
-   *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
+   * Returns the debug bar object if in local mode
+   * 
+   * @return instance
    */
   function debugbar()
   {
@@ -182,12 +129,9 @@ if (!function_exists('debugbar'))
 if (!function_exists('debugStack'))
 {
   /**
-   * Return dd in the view
+   * Use this function to debug the stack on for your class. Use it anywhere in your app.
    *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return 
+   * @return void
    */
   function debugStack($title="")
   {
@@ -199,12 +143,12 @@ if (!function_exists('debugStack'))
 if ( ! function_exists('flash'))
 {
   /**
-   * Show the flash
-   *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return \Illuminate\View\View
+   * Access to the application flash objecjt. 
+   * flash()->error('error');
+   * flash()->info('info');
+   * flash()->success('success');
+   * 
+   * @return flash object
    */
   function flash()
   {
@@ -216,15 +160,11 @@ if ( ! function_exists('flash'))
 if ( ! function_exists('redirect'))
 {
   /**
-   * Get the evaluated view contents for the given view.
+   * Redirects to a new page.
    *
-   * @param  string  $view
-   * @param  array   $data
-   * @param  array   $mergeData
-   * @return \Illuminate\View\View
    */
   function redirect($url='/')
   {
-    return app()->response->redirect($url);
+    return header('Location: '.$url);
   }
 }
