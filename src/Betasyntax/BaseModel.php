@@ -267,48 +267,65 @@ class BaseModel
   { 
     self::instance();
     //loop through find by and get the where statments
-    if (isset($args)) {
+    if (isset($args) && is_array($args)) {
       try {
         $sql_where = '';
         $quote = '';
         $total_args = count($args);
         $cnt = 1;
         // dd($args);
-        foreach ($args as $key => $value) {
-          if (is_string($value))
-            $quote = '"';
-          $and = '';
-          if ($cnt < $total_args)
-            $and = 'AND ';
-          $cnt++;
-          if(is_array($value)) {
-            // dd($value);
-            $where = self::table_name().'.'.$key.' IN (';
-            for($i=0;$i<count($value);$i++) {
-              if(!is_string($value[0])) {
-                if($i+1!=count($value)) {
-                  $where .= $value[$i].', ';
+        if (isAssoc($args)) {
+          foreach ($args as $key => $value) {
+            if (is_string($value))
+              $quote = '"';
+            $and = '';
+            if ($cnt < $total_args)
+              $and = 'AND ';
+            if(is_array($value)) {
+              // dd($value);
+              $where = self::table_name().'.'.$key.' IN (';
+              for($i=0;$i<count($value);$i++) {
+                if(!is_string($value[0])) {
+                  if($i+1!=count($value)) {
+                    $where .= $value[$i].', ';
+                  } else {
+                    $where .= $value[$i].')';
+                  }
                 } else {
-                  $where .= $value[$i].')';
-                }
-              } else {
-                if($i+1!=count($value)) {
-                  $where .= '"'.$value[$i].'", ';
-                } else {
-                  $where .= '"'.$value[$i].'")';
+                  if($i+1!=count($value)) {
+                    $where .= '"'.$value[$i].'", ';
+                  } else {
+                    $where .= '"'.$value[$i].'")';
+                  }
                 }
               }
+              $sql_where .= $where;
+              if($cnt!=count($args)) {
+                $sql_where .= ' OR ';
+              }
+            } else {
+              $sql_where .= self::table_name().'.'.$key.' = '.$quote.$value.$quote.' '.$and;
             }
-            $sql_where .= $where;
-          } else {
-            $sql_where .= self::table_name().'.'.$key.' = '.$quote.$value.$quote.' '.$and;
+            $cnt++;
           }
+        } else {
+          $where = '';
+          for($i=0;$i<count($args);$i++) {
+            if($i+1!=count($args)) {
+              $where .= $args[$i].', ';
+            } else {
+              $where .= $args[$i].')';
+            }
+          }
+          $sql_where .= self::table_name().'.id IN ('.$where;
         }
       } catch (Exception $e) {
         $debugbar = app()->debugbar;
         $debugbar::$debugbar['exceptions']->addException($e);
       }
-    }    
+    } else {
+      return static::find($args,$join_type='',$foreign_table='');
+    }
     $sql = self::_getSql($join_type,$foreign_table,$sql_where,$limit);   
     $x = self::_getResult($sql);
 
@@ -318,11 +335,21 @@ class BaseModel
   public static function find($id,$join_type='',$foreign_table='') 
   { 
     self::instance();
+
+    if(is_array($id)) {
+      //we have an array lets use find by instead
+      return static::find_by($id);
+    }
     $where = self::table_name().'.id = '.$id;
     $sql = self::_getSql($join_type,$foreign_table,$where);
     return self::_getResult($sql);
   }
 
+
+  public static function where($result)
+  {
+    return $result;
+  }
   private static function _getResult($sql)
   {
     

@@ -181,3 +181,16 @@ if ( ! function_exists('debug'))
     return $debug->message($value,$tag,$type,$object);
   }
 }
+
+
+if ( ! function_exists('isAssoc'))
+{
+  /**
+   * Redirects to a new page.
+   *
+   */
+  function isAssoc($arr)
+  {
+    return array_keys($arr) !== range(0, count($arr) - 1);
+  }
+}
