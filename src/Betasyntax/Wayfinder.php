@@ -64,7 +64,7 @@ class Wayfinder
               $url2='#';
               $opt = 'onClick="window.open("'.$z->url.'")"';
             } else {
-              var_dump($z->url);
+              // var_dump($z->url);
               if(substr( $z->url, 0, 1 ) === "\/") {
                 $url2=$z->url;
               } else {

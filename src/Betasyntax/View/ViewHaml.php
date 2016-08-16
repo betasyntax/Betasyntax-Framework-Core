@@ -28,6 +28,4 @@ Class ViewHaml extends ViewProvider
     $this->loadHelpers();
     $this->loadLocalHelpers();
   }
-
-
 }

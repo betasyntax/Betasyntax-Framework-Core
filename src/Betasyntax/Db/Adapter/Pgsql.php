@@ -18,9 +18,12 @@ class Pgsql implements AdapterInterface
     $dsn = sprintf('pgsql:dbname=%s;host=%s', $config->dbscheme, $config->host);
     try {
       $this->_dbh = new PDO($dsn, $config->user, $config->password, array());
+      
       $app->pdo = $this->_dbh;
     } catch(PDOException $e) {
-        echo 'ERROR: ' . $e->getMessage();
+      $debug = $app->debugbar;
+      $debug::$debugbar['exceptions']->addException($e);
+      echo 'ERROR: ' . $e->getMessage();
     }
   }
   public function fetch($sql)

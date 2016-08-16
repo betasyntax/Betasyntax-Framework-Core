@@ -26,6 +26,27 @@ class CoreHelpers
       return $s;
     });
 
+    $link_to = new \Twig_SimpleFunction('link_to', function ($text, $route=['/'],$data=[],$attributes=[]) {
+      $url = urlHelper($route,$data);
+      if(isset($attributes)){
+        $cnt='';
+        foreach ($attributes as $key => $value) {
+          $cnt .= $value[0].'="'.$value[1].'" ';
+        } 
+      }
+      echo '<a href="'.$url.'" '.$cnt.'>'.$text.'</a>';
+    });
+
+    $link_to_remote = new \Twig_SimpleFunction('link_to_remote', function ($text, $url, $attributes) {
+      if(isset($attributes)){
+        $cnt='';
+        foreach ($attributes as $key => $value) {
+          $cnt .= $value[0].'="'.$value[1].'" ';
+        } 
+      }
+      echo '<a href="'.$url.'" '.$cnt.'>'.$text.'</a>';
+    });
+
     $debugBarHead = new \Twig_SimpleFunction('debugBarHead', function () {
       $app = app();
       if( ! $app->isProd()) {
@@ -60,6 +81,8 @@ class CoreHelpers
       'flash'=>$flash,
       'debugBarHead'=>$debugBarHead,
       'debugBarBody'=>$debugBarBody,
+      'link_to'=>$link_to,
+      'link_to_remote'=>$link_to_remote,
       'dd'=>$dd
     ];
   }

@@ -20,6 +20,25 @@ if ( ! function_exists('app'))
   }
 }
 
+
+
+if (!function_exists('urlHelper'))
+{
+  /**
+   * Get the config object.
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return 
+   */
+  function urlHelper($route,$args)
+  {
+    return app()->router->urlHelper($route,$args);
+  }
+}
+
+
 if (!function_exists('config'))
 {
   /**
@@ -30,10 +49,10 @@ if (!function_exists('config'))
    * @param  array   $mergeData
    * @return 
    */
-  function config($key)
+  function config($file,$key)
   {
     $config = app()->config;
-    return $config->conf[$key];
+    return $config->conf[$file][$key];
   }
 }
 
@@ -51,6 +70,23 @@ if (!function_exists('env'))
   {
     $config = app()->env;
     return $config->env[$key];
+  }
+}
+
+if (!function_exists('lsDir'))
+{
+  /**
+   * Get the config object.
+   *
+   * @param  string  $view
+   * @param  array   $data
+   * @param  array   $mergeData
+   * @return 
+   */
+  function lsDir($path,$recursive=false)
+  {
+    $manager = app()->mountManager->getManager();
+    return $manager->listContents($path,$recursive);
   }
 }
 

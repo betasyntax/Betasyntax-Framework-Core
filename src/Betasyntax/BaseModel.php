@@ -100,8 +100,8 @@ class BaseModel
   {
     $app = app();
     if (!$config){
-      $dbtype = config('default_db');
-      $dbconfig = config($dbtype);
+      $dbtype = config('db','default');
+      $dbconfig = config('db',$dbtype);
       $config = new Database;
       $config->driver = $dbconfig['driver'];
       $config->host = $dbconfig['host'];
@@ -111,6 +111,8 @@ class BaseModel
     }
     self::$db = DbFactory::connect($config);
     if ( ! self::$db) {
+        $debugbar = app()->debugbar;
+        $debugbar::$debugbar['exceptions']->addException(new Exception('Error connecting to database. Please check your settings'));
       flash()->error('Error connecting to database. Please check your settings');
     }
     restore_exception_handler();
@@ -287,8 +289,9 @@ class BaseModel
       }
     }
     $sql = self::_getSql($join_type,$foreign_table,$sql_where,$limit);    
-    // echo $sql;
-    return self::_getResult($sql);
+    echo $sql;
+    $x = self::_getResult($sql);
+    return $x;
   }
 
   public static function find($id,$join_type='',$foreign_table='') 
@@ -300,6 +303,7 @@ class BaseModel
 
   private static function _getResult($sql)
   {
+    
     self::$result = self::$db->fetch($sql);
     self::$c = self::$result;
     if (count(self::$result)==1) {

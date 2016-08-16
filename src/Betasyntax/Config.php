@@ -4,12 +4,12 @@ use Betasyntax\Core\Application;
 use Noodlehaus\Config as Conf;
 
 class Config {
-    
-    protected $app;
-    public $conf;
+  public $conf;
 
-    public function __construct() {
-      $this->app = app();
-      $this->conf = Conf::load($this->app->getBasePath().'/config/config.php');
-    }
+  public function __construct() {
+    $basepath = (string) app()->getBasePath().'/config/';
+    $this->conf['app'] = Conf::load($basepath.'app.php');
+    $this->conf['db'] = Conf::load($basepath.'db.php');
+    $this->conf['email'] = Conf::load($basepath.'email.php');
+  }
 }

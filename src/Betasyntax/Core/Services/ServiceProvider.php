@@ -1,7 +1,6 @@
 <?php namespace Betasyntax\Core\Services;
 
 use Betasyntax\Core\Application;
-
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\ServiceProvider\BootableServiceProviderInterface;
 
@@ -69,8 +68,8 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
         $this->app->logger = $this->container->get('Betasyntax\Logger\Logger');
         $this->app->router = $this->container->get('Betasyntax\Router\Router');
         
-        // register any user provided middlewares
         debugStack('Application');
+        // register any user provided middlewares
         // 
         $this->register();
     }

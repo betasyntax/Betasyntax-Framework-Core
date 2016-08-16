@@ -3,9 +3,9 @@ namespace Betasyntax\Router;
 
 use Closure;
 use Exception;
+use Relay\RelayBuilder;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use Relay\RelayBuilder;
 
 class Router {
 	/**
@@ -38,7 +38,6 @@ class Router {
 		'**' => '.++',
 		''   => '[^/\.]++'
 	);
-
 	/**
 	  * Create router in one call from config.
 	  *
@@ -66,6 +65,11 @@ class Router {
 		
 	}
 	
+	public function urlHelper($route,$args=[])
+	{
+		return $this->fakeUrl($this->namedRoutes[$route],$args);
+	}
+
   private function getMiddleWareArray()
   {
     return $this->app->conf('middleware');
@@ -144,6 +148,16 @@ class Router {
 		return;
 	}
 
+	public function fakeUrl($route, $params)
+	{
+		if (preg_match_all('/\[[\s\S]+?]/', $route, $matches, PREG_SET_ORDER)) {
+			for ($i=0;$i<count($matches);$i++) {
+				$route = preg_replace('/\[[\s\S]+?]/', $params[$i], $route);
+			}
+		}
+		return($route);
+	}
+
 	/**
 	 * Reversed routing
 	 *
@@ -156,6 +170,8 @@ class Router {
 	 */
 	public function generate($routeName, array $params = array()) 
 	{
+		echo $routeName;
+		dd($params);
 		// Check if named route exists
 		if (!isset($this->namedRoutes[$routeName])) {
 			throw new Exception("Route '{$routeName}' does not exist.");
@@ -166,10 +182,12 @@ class Router {
 		$url = $this->basePath . $route;
 		if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER)) {
 			foreach ($matches as $match) {
+			dd($match);
 				list($block, $pre, $type, $param, $optional) = $match;
 				if ($pre) {
 					$block = substr($block, 1);
 				}
+				dd($params[$param]);
 				if (isset($params[$param])) {
 					$url = str_replace($block, $params[$param], $url);
 				} elseif ($optional) {
