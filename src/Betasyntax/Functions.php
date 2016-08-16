@@ -168,3 +168,16 @@ if ( ! function_exists('redirect'))
     return header('Location: '.$url);
   }
 }
+
+if ( ! function_exists('debug'))
+{
+  /**
+   * Redirects to a new page.
+   *
+   */
+  function debug($value='',$tag='',$type = 'info', $object = null)
+  {
+    $debug = debugbar();
+    return $debug->message($value,$tag,$type,$object);
+  }
+}

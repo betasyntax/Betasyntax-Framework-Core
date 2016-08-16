@@ -41,11 +41,22 @@ Class DebugBar
     }
   }
 
-  public function message($type = 'addMessage', $value, $object = null)
+  public function message($value,$tag='',$type = 'info', $object = null)
   {
     if($object==null && ($type=='addMessage'||$type=='info')) {
-      $class='Debug: ';
-      static::$stack[$type][] = $class.$value;
+    //   $class='Debug: ';
+    //   static::$stack[$type][] = $class.$value;
+      if($tag!='') {
+        $tag=$tag.': ';
+        static::$stack[$type][] = $tag;
+      }
+      static::$stack[$type][] = $value;
+    } elseif($object == null) {
+      if($tag!='') {
+        $tag=$tag.': ';
+        static::$stack[$type][] = $tag;
+      }
+      static::$stack[$type][] = $value;
     } else {
       $class = get_class($object);
       // echo $class;
@@ -88,8 +99,10 @@ Class DebugBar
             foreach ($value as $key => $val) {
               if($type=='info'||$type=='addMessage') {
                 static::$debugbar["messages"]->{$type}($val);
-              } else {
-                static::$debugbar["messages"]->{$type}($val[1]);
+              } elseif($type=='error') {
+                static::$debugbar["messages"]->error($val);
+              } elseif ($type=='warn') {
+                // static::$debugbar["messages"]->warn($val);
               }
             }
           }

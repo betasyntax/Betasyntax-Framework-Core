@@ -359,7 +359,7 @@ class Router {
 			}
 		}
 		if(!$this->routeFound) {
-			redirect('/notfound'); 
+			view('Errors/404.haml'); 
 		} else {
 			return false;
 		}
