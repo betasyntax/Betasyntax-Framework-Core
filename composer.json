@@ -38,7 +38,8 @@
           "Betasyntax\\": "src/Betasyntax/"
         },
         "files": [
-            "src/Betasyntax/Functions.php"
+            "src/Betasyntax/Functions.php",
+            "../../../../app/Functions.php"
         ]
     }
 }

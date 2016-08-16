@@ -1,6 +1,4 @@
-<?php 
-namespace Betasyntax\Router;
-
+<?php namespace Betasyntax\Router;
 
 class BaseController
 {  
