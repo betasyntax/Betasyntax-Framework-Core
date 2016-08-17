@@ -73,7 +73,7 @@ class CoreHelpers
     });
 
     $dd = new \Twig_SimpleFunction('dd', function ($data) {
-      echo static::$app->util->dd($data);
+      dd($data);
     });
 
     return [
