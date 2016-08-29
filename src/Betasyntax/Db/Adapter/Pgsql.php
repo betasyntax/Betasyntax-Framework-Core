@@ -30,7 +30,7 @@ class Pgsql implements AdapterInterface
     $app = app();
     $started = microtime(true);
     $sth = $this->_dbh->prepare($sql);
-    $sth->execute();
+    $test = $sth->execute($data);
     $sth->setFetchMode(PDO::FETCH_OBJ);
     $this->_rec_set = $sth->fetchAll();
     if( ! $app->isProd()) {

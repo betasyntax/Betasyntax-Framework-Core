@@ -3,9 +3,9 @@
 use StdClass;
 use Exception;
 use Betasyntax\Db\DbFactory;
-use Betasyntax\Db\DatabaseConfig;
 use Betasyntax\Logger\Logger;
-
+use Betasyntax\Db\DatabaseConfig;
+use Betasyntax\Orm\PdoValueBinder;
 /**
  * 
  */
@@ -287,12 +287,12 @@ class BaseModel
   { 
     // set the instance
     self::instance();
+    $type = new PdoValueBinder(self::$db->_dbh);
     //loop through find by and get the where statments
     if (isset($args) && is_array($args)) {
       try {
         // set default where string
         $sql_where = '';
-        $sql_where2 = '';
         // quote string
         $quote = '';
         // total arguments provided
@@ -301,81 +301,68 @@ class BaseModel
         $cnt = 1;
         // defult string for the AND clause
         $and = '';
-        $where2 = '';
+        $where = '';
         $values = [];
         // if the array is an associative array
         if (isAssoc($args)) {
           //loop through the data provided to the find_by function
           foreach ($args as $key => $value) {
-            // check if value is a string if so we need to add a " remove for prepared statements
-            if (is_string($value))
-              $quote = '"';
             // set $and var if there are more args to come
-            if ($cnt < $total_args)
+            if ($cnt < $total_args) {
               $and = 'AND ';
+            } else {
+              $and = '';
+            }
             // if the value is an array lets loop through it and build the actual sql clause
             if(is_array($value)) {
               // values begin here
-              $where = self::table_name().'.'.$key.' IN (';
-              $where2 = self::table_name().'.? IN (';
-              $values[] = $key;
+              $where = self::table_name().'.? IN (';
+              $values[] = $type->type($key);
               // loop through array to get the values
               for($i=0;$i<count($value);$i++) {
                 // check if string
                 if(is_string($value[0])) {
                   if($i+1!=count($value)) {
-                    $where .= '"'.$value[$i].'", ';
-                    $where2 .= '?, ';
-                    $values[] = $value[$i];
+                    $where .= '?, ';
+                    $values[] = $type->type($value[$i]);
                   } else {
-                    $where .= '"'.$value[$i].'")';
-                    $where2 .= '?)';
-                    $values[] = $value[$i];
+                    $where .= '?)';
+                    $values[] = $type->type($value[$i]);
                   }
-                //
+                // else its a numeric value
                 } else {
                   if($i+1!=count($value)) {
-                    $where .= $value[$i].', ';
-                    $where2 .= '?, ';
-                    $values[] = $value[$i];
+                    $where .= '?, ';
+                    $values[] = $type->type($value[$i]);
                   } else {
-                    $where .= $value[$i].')';
-                    $where2 .= '?)';
-                    $values[] = $value[$i];
+                    $where .= '?)';
+                    $values[] = $type->type($value[$i]);
                   }
                 }
               }
               $sql_where .= $where;
-              $sql_where2 .= $where2;
               if($cnt!=count($args)) {
                 $sql_where .= ' OR ';
-                $sql_where2 .= ' OR ';
               }
             } else {
-              $sql_where .= self::table_name().'.'.$key.' = '.$quote.$value.$quote.' '.$and;
-              $sql_where2 .= self::table_name().'.? = ? '.$and;
-              $values[] = $key;              
-              $values[] = $value;
+              $sql_where .= '`'.self::table_name().'`.`'.$key.'` = ? '.$and;
+              $values[] = $type->type($value);
             }
             $cnt++;
           }
         // Array is not associative
         } else {
           $where = '';
-          $where2 = '';
           for($i=0;$i<count($args);$i++) {
             if($i+1!=count($args)) {
-              $where .= $args[$i].', ';
-              $where2 .= '?, ';
-              $values[] = $args[$i];
+              $where .= '?, ';
+              $values[] = $type->type($args[$i]);
             } else {
-              $where .= $args[$i].')';
-              $where2 .= '?)';
-              $values[] = $args[$i];
+              $where .= '?)';
+              $values[] = $type->type($args[$i]);
             }
           }
           $sql_where .= self::table_name().'.id IN ('.$where;
-          $sql_where2 .= self::table_name().'.id IN ('.$where2;
         }
       } catch (Exception $e) {
         $debugbar = app()->debugbar;
@@ -385,15 +372,13 @@ class BaseModel
       // if the just provided a single numeric value send it to find to handle
       return static::find($args,$join_type,$foreign_table);
     }
-    $sql = self::_getSql($join_type,$foreign_table,$sql_where,$limit);   
-    $x = self::_getResult($sql[0],$sql[1]);
-
-    return $x;
+    $sql2 = self::_getSql($join_type,$foreign_table,$sql_where,$limit);  
+    $x2 = self::_getResult($sql2[0],$values);
+    return $x2;
   }
 
   public static function find($id,$join_type='',$foreign_table='') 
   { 
-    // now uses prepared statements
     self::instance();
     if(is_array($id)) {
       //we have an array lets use find by instead
@@ -405,11 +390,6 @@ class BaseModel
     } else {
       return null;
     }
-  }
-
-  public static function where($result)
-  {
-    return $result;
   }
 
   private static function _getResult($sql,$data=null)
@@ -452,23 +432,20 @@ class BaseModel
       //build the joins sql string
       if (in_array($join_type,['has_one','belongs_to','has_many'])) {
         //start building the 
-        $select .= ','.$foreign_table.'.id as '.$foreign_table.'_id';
+        $select .= ',`'.$foreign_table.'`.`id` as `'.$foreign_table.'_id`';
         switch ($join_type) {
           case 'has_one':
-            // dd('has_one');
-            $join_sql .= ' LEFT OUTER JOIN '.$foreign_table.' ON '.self::table_name().'.id='.$foreign_table.'.'.self::table_name().'_id';
-            $where = self::table_name().'.id = '.$where;
-            $where2 = self::table_name().'.id = ?';
+            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.self::table_name().'`.`id`=`'.$foreign_table.'`.`'.self::table_name().'_id`';
+            // $where = '`'.self::table_name().'`.`id` = '.$where;
+            $where2 = '`'.self::table_name().'`.`id` = ?';
             break;
           case 'belongs_to':
-            $join_sql .= ' LEFT OUTER JOIN '.$foreign_table.' ON '.self::table_name().'.'.$foreign_table.'_id='.$foreign_table.'.id';
-            $has_one_where = self::table_name().'.';
+            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.self::table_name().'`.`'.$foreign_table.'_id`=`'.$foreign_table.'`.`id`';
+            $has_one_where = '`'.self::table_name().'`.';
             break;
           case 'has_many':
-            $join_sql .= ' LEFT OUTER JOIN '.$foreign_table.' ON '.self::table_name().'.id='.$foreign_table.'.'.self::table_name().'_id';
-          // case 'has_many_through':
-          //   $join_sql .= ' LEFT OUTER JOIN '.$foreign_table.' ON '.self::table_name().'.id='.$foreign_table.'.'.self::table_name().'_id';
-          //   $where = self::table_name().'.id = '.$where;
+            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.self::table_name().'`.`id`=`'.$foreign_table.'`.`'.self::table_name().'_id`';
+          // case 'has_many_through': // not implemented
           default:  
             # code...
             break;
@@ -478,13 +455,8 @@ class BaseModel
     // find() function
     if (is_array($where)) {
       $c = count($where);
-      $idin = $has_one_where.'id IN (';
-      $idin2 = $has_one_where.'id IN (';
+      $idin2 = $has_one_where.'`id` IN (';
       for ($i=0;$i<count($where);$i++) {
-        /*
-        change to prepared statement
-         */
-        $idin .= $where[$i];
         $idin2 .= '?';
         $values[] = $where[$i];
         if($i<count($where)-1) {
@@ -492,12 +464,9 @@ class BaseModel
         }
       }
       $idin .= ')';
-      $where = $idin;
       $where2 = $idin;
     }
-    // dd($where2);
-    // dd($values);
-    return array('SELECT *'.$select.' FROM '.self::table_name().$join_sql.' WHERE '.$where2.$limit.';',$where2);
+    return array('SELECT *'.$select.' FROM `'.self::table_name().'`'.$join_sql.' WHERE '.$where2.$limit,$where2);
   }
 
   public static function search($column,$operator,$value,$limit = null) 
@@ -635,4 +604,24 @@ class BaseModel
       return strpos($haystack, $needles);
     }
   }
+
+  public static function interpolateQuery($query, $params) {
+      $keys = array();
+
+      # build a regular expression for each parameter
+      foreach ($params as $key => $value) {
+          if (is_string($key)) {
+              $keys[] = '/:'.$key.'/';
+          } else {
+              $keys[] = '/[?]/';
+          }
+      }
+
+      $query = preg_replace($keys, $params, $query, 1, $count);
+
+      #trigger_error('replaced '.$count.' keys');
+
+      return $query;
+  }
+
 } 
