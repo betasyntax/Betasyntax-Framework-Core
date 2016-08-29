@@ -1,9 +1,8 @@
-<?php
-
-namespace Betasyntax\Db\Adapter;
+<?php namespace Betasyntax\Db\Adapter;
 
 use PDO;
-use Betasyntax\Database;
+use Betasyntax\Db\DatabaseConfig;
+
 /**
  * MySQLi Pdo
  */
@@ -12,7 +11,7 @@ class Mysql implements AdapterInterface
   private $_dbh;
   public $_rec_set;
 
-  public function connect(Database $config)
+  public function connect(DatabaseConfig $config)
   {
     $app = app();
     $dsn = sprintf('mysql:dbname=%s;host=%s', $config->dbscheme, $config->host);
@@ -25,14 +24,18 @@ class Mysql implements AdapterInterface
       echo 'ERROR: ' . $e->getMessage();
     }
   }
-  public function fetch($sql)
+  public function fetch($sql,$data=null)
   {
     $app = app();
     $started = microtime(true);
     $sth = $this->_dbh->prepare($sql);
-    $sth->execute();
+
+    if(!$data) {
+      $sth->execute();
+    } else {
+      $sth->execute(array($data));
+    }
     $sth->setFetchMode(PDO::FETCH_OBJ);
-    // dd($sth->fetchAll());
     $this->_rec_set = $sth->fetchAll();
     if( ! $app->isProd()) {
       $end = microtime(true);

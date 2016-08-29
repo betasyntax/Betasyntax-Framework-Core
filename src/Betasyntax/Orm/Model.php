@@ -1,5 +1,5 @@
 <?php
-namespace Betasyntax;
+namespace Betasyntax\Orm;
 
 class Model extends BaseModel 
 {

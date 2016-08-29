@@ -1,6 +1,6 @@
-<?php namespace Betasyntax;
+<?php namespace Betasyntax\Db;
 
-Class Database
+Class DatabaseConfig
 {
   public $driver;
   public $host;

@@ -1,14 +1,16 @@
-<?php namespace Betasyntax;
+<?php namespace Betasyntax\Orm;
 
-use Betasyntax\Db\DbFactory;
-use Betasyntax\Database;
-use Exception;
 use StdClass;
+use Exception;
+use Betasyntax\Db\DbFactory;
+use Betasyntax\Db\DatabaseConfig;
 use Betasyntax\Logger\Logger;
 
+/**
+ * 
+ */
 class BaseModel  
 {
-  /* Configuration */
   /**
    * Configuration storage
    * @var array
@@ -20,19 +22,67 @@ class BaseModel
     'fetch'  => 'stdClass'
   );
 
+  /**
+   * [$belongs_to description]
+   * @var [type]
+   */
   public static $belongs_to;
+
+  /**
+   * [$has_one description]
+   * @var [type]
+   */
   public static $has_one;
+
+  /**
+   * [$has_one description]
+   * @var [type]
+   */
   public static $has_many;
+
+  /**
+   * [$has_one description]
+   * @var [type]
+   */
   public static $has_many_through;
+
+  /**
+   * [$has_one description]
+   * @var [type]
+   */
   public static $has_one_through;
+
+  /**
+   * [$has_one description]
+   * @var [type]
+   */
   public static $has_and_belongs_to_many;
+
+  /**
+   * [$has_one description]
+   * @var [type]
+   */
   public static $select_as;
 
+  /**
+   * [$last_insert_id description]
+   * @var [type]
+   */
   protected static $last_insert_id;
 
   // protected static $tetimg;
   protected static $c;
+
+  /**
+   * [$d description]
+   * @var [type]
+   */
   protected static $d;
+
+  /**
+   * [$d description]
+   * @var [type]
+   */
   protected static $properties = array();
 
   /* Static instances */
@@ -42,6 +92,10 @@ class BaseModel
    */
   protected static $instance  = array();
 
+  /**
+   * [$arguments description]
+   * @var array
+   */
   protected static $arguments = array( 'driver', 'host', 'database', 'user', 'password' );
 
   /* Constructor */
@@ -68,14 +122,29 @@ class BaseModel
    * @var array
    */
   protected static $table_name = '';
+
+  /**
+   * [$statement description]
+   * @var array
+   */
   protected static $statement = array();
+
+  /**
+   * [$columns description]
+   * @var array
+   */
   protected static $columns = array();
+
   /**
    * Tables shema information cache
    * @var array
    */
   protected static $table = array();
 
+  /**
+   * [$id description]
+   * @var [type]
+   */
   protected static $id;
 
   /**
@@ -84,25 +153,13 @@ class BaseModel
    */
   protected static $key = array();
 
-  /**
-   * Constructor
-   * @uses  PDO
-   * @throw PDOException
-   * @param string $driver   Database driver
-   * @param string $host     Database host
-   * @param string $database Database name
-   * @param string $user     User name
-   * @param string $pass     [Optional] User password
-   * @see   http://php.net/manual/fr/pdo.construct.php
-   * @todo  Support port/socket within DSN?
-   */
   public function __construct ($config = false) 
   {
     $app = app();
     if (!$config){
       $dbtype = config('db','default');
       $dbconfig = config('db',$dbtype);
-      $config = new Database;
+      $config = new DatabaseConfig;
       $config->driver = $dbconfig['driver'];
       $config->host = $dbconfig['host'];
       $config->user = $dbconfig['user'];
@@ -119,18 +176,6 @@ class BaseModel
     self::$info = (object) array(self::$arguments);
     unset(self::$info->password);
   }
-
-  /**
-   * Get singleton instance
-   * @uses   static::config
-   * @uses   static::__construct
-   * @param string $driver   [Optional] Database driver
-   * @param string $host     [Optional] Database host
-   * @param string $database [Optional] Database name
-   * @param string $user     [Optional] User name
-   * @param string $pass     [Optional] User password
-   * @return Db Singleton instance
-   */
 
   static public function __callStatic ($name, $config) 
   {
@@ -163,13 +208,6 @@ class BaseModel
     return self::$properties[$key] = $value;
   }
 
-  /**
-   * Get and set default Db configurations
-   * @uses   static::config
-   * @param  string|array $key   [Optional] Name of configuration or hash array of configurations names / values
-   * @param  mixed        $value [Optional] Value of the configuration
-   * @return mixed        Configuration value(s), get all configurations when called without arguments
-   */
   static public function config ($key = null, $value = null) 
   {
     if (!isset($key)) {
@@ -186,25 +224,15 @@ class BaseModel
     }
   }
 
-  /**
-   * Avoid exposing exception informations
-   * @param Exception $exception [Optional] User password
-   */
   public static function safe_exception (Exception $exception) 
   {
     die('Uncaught exception: '.$exception->getMessage());
   }
 
-  /* SQL query */
-  /**
-   * Get latest SQL query
-   * @return string Latest SQL query
-   */
   public function __toString () 
   {
     return self::$result ? self::$result->queryString : null;
   }  
-
 
   public static function table_name() 
   {
@@ -220,14 +248,6 @@ class BaseModel
     return end($class);
   }
 
-  /* Query methods */
-  /*** Execute raw SQL query
-   * @uses   PDO::query
-   * @throw  PDOException
-   * @param  string $sql Plain SQL query
-   * @return Db     Self instance
-   * @todo   ? detect USE query to update dbname ?
-   */
   public static function raw($sql) 
   {
     self::instance();
@@ -265,95 +285,136 @@ class BaseModel
 
   public static function find_by($args,$limit='',$join_type='',$foreign_table='') 
   { 
+    // set the instance
     self::instance();
     //loop through find by and get the where statments
     if (isset($args) && is_array($args)) {
       try {
+        // set default where string
         $sql_where = '';
+        $sql_where2 = '';
+        // quote string
         $quote = '';
+        // total arguments provided
         $total_args = count($args);
+        // count for the array
         $cnt = 1;
-        // dd($args);
+        // defult string for the AND clause
+        $and = '';
+        $where2 = '';
+        $values = [];
+        // if the array is an associative array
         if (isAssoc($args)) {
+          //loop through the data provided to the find_by function
           foreach ($args as $key => $value) {
+            // check if value is a string if so we need to add a " remove for prepared statements
             if (is_string($value))
               $quote = '"';
-            $and = '';
+            // set $and var if there are more args to come
             if ($cnt < $total_args)
               $and = 'AND ';
+            // if the value is an array lets loop through it and build the actual sql clause
             if(is_array($value)) {
-              // dd($value);
+              // values begin here
               $where = self::table_name().'.'.$key.' IN (';
+              $where2 = self::table_name().'.? IN (';
+              $values[] = $key;
+              // loop through array to get the values
               for($i=0;$i<count($value);$i++) {
-                if(!is_string($value[0])) {
-                  if($i+1!=count($value)) {
-                    $where .= $value[$i].', ';
-                  } else {
-                    $where .= $value[$i].')';
-                  }
-                } else {
+                // check if string
+                if(is_string($value[0])) {
                   if($i+1!=count($value)) {
                     $where .= '"'.$value[$i].'", ';
+                    $where2 .= '?, ';
+                    $values[] = $value[$i];
                   } else {
                     $where .= '"'.$value[$i].'")';
+                    $where2 .= '?)';
+                    $values[] = $value[$i];
+                  }
+                //
+                } else {
+                  if($i+1!=count($value)) {
+                    $where .= $value[$i].', ';
+                    $where2 .= '?, ';
+                    $values[] = $value[$i];
+                  } else {
+                    $where .= $value[$i].')';
+                    $where2 .= '?)';
+                    $values[] = $value[$i];
                   }
                 }
               }
               $sql_where .= $where;
+              $sql_where2 .= $where2;
               if($cnt!=count($args)) {
                 $sql_where .= ' OR ';
+                $sql_where2 .= ' OR ';
               }
             } else {
               $sql_where .= self::table_name().'.'.$key.' = '.$quote.$value.$quote.' '.$and;
+              $sql_where2 .= self::table_name().'.? = ? '.$and;
+              $values[] = $key;              
+              $values[] = $value;
             }
             $cnt++;
           }
+        // Array is not associative
         } else {
           $where = '';
+          $where2 = '';
           for($i=0;$i<count($args);$i++) {
             if($i+1!=count($args)) {
               $where .= $args[$i].', ';
+              $where2 .= '?, ';
+              $values[] = $args[$i];
             } else {
               $where .= $args[$i].')';
+              $where2 .= '?)';
+              $values[] = $args[$i];
             }
           }
           $sql_where .= self::table_name().'.id IN ('.$where;
+          $sql_where2 .= self::table_name().'.id IN ('.$where2;
         }
       } catch (Exception $e) {
         $debugbar = app()->debugbar;
         $debugbar::$debugbar['exceptions']->addException($e);
       }
     } else {
-      return static::find($args,$join_type='',$foreign_table='');
+      // if the just provided a single numeric value send it to find to handle
+      return static::find($args,$join_type,$foreign_table);
     }
     $sql = self::_getSql($join_type,$foreign_table,$sql_where,$limit);   
-    $x = self::_getResult($sql);
+    $x = self::_getResult($sql[0],$sql[1]);
 
     return $x;
   }
 
   public static function find($id,$join_type='',$foreign_table='') 
   { 
+    // now uses prepared statements
     self::instance();
-
     if(is_array($id)) {
       //we have an array lets use find by instead
-      return static::find_by($id);
+      return static::find_by($id,'',$join_type,$foreign_table);
+    } elseif(is_numeric($id)) {
+      $where = self::table_name().'.id = ?';
+      $sql = self::_getSql($join_type,$foreign_table,$where);
+      return self::_getResult($sql[0],$id);
+    } else {
+      return null;
     }
-    $where = self::table_name().'.id = '.$id;
-    $sql = self::_getSql($join_type,$foreign_table,$where);
-    return self::_getResult($sql);
   }
-
 
   public static function where($result)
   {
     return $result;
   }
-  private static function _getResult($sql)
+
+  private static function _getResult($sql,$data=null)
   {
-    
-    self::$result = self::$db->fetch($sql);
+    self::$result = self::$db->fetch($sql,$data);
     self::$c = self::$result;
     if (count(self::$result)==1) {
       return (object) self::$result[0];
@@ -364,26 +425,40 @@ class BaseModel
 
   private static function _getSql($join_type='',$foreign_table='',$where='',$limit='')
   {
+    // holds the join string
     $join_sql = '';
+    $join_sql2 = '';
+    $where2 = $where;
+    // base select statement
     $select = '';
+    // the model class name
     $has_one_where = '';
+    // holds the values so we can build a prepared statement
+    $values = [];
+    // set the limit
     if ($limit !='') {
       $limit = ' LIMIT '.$limit.';';
     }
+    // Build the with has_many, has_one and belongs_to sql joins strings and values
     if ($join_type!='') {
+      // set the default limit if the limit = '' assuming has_one
       if ($limit =='') {
         $limit = ' LIMIT 1';
       }
+      // set the limit to nothing if we have has_many and $where is an array so limit is useless
       if (($join_type=='has_many') || (is_array($where))) {
         $limit = '';
       }
+      //build the joins sql string
       if (in_array($join_type,['has_one','belongs_to','has_many'])) {
+        //start building the 
         $select .= ','.$foreign_table.'.id as '.$foreign_table.'_id';
         switch ($join_type) {
           case 'has_one':
+            // dd('has_one');
             $join_sql .= ' LEFT OUTER JOIN '.$foreign_table.' ON '.self::table_name().'.id='.$foreign_table.'.'.self::table_name().'_id';
             $where = self::table_name().'.id = '.$where;
-            $select= '';
+            $where2 = self::table_name().'.id = ?';
             break;
           case 'belongs_to':
             $join_sql .= ' LEFT OUTER JOIN '.$foreign_table.' ON '.self::table_name().'.'.$foreign_table.'_id='.$foreign_table.'.id';
@@ -391,7 +466,6 @@ class BaseModel
             break;
           case 'has_many':
             $join_sql .= ' LEFT OUTER JOIN '.$foreign_table.' ON '.self::table_name().'.id='.$foreign_table.'.'.self::table_name().'_id';
-            $where = self::table_name().'.id = '.$where;
           // case 'has_many_through':
           //   $join_sql .= ' LEFT OUTER JOIN '.$foreign_table.' ON '.self::table_name().'.id='.$foreign_table.'.'.self::table_name().'_id';
           //   $where = self::table_name().'.id = '.$where;
@@ -401,28 +475,29 @@ class BaseModel
         }       
       }
     }
-    // var_dump('join_type ='.$join_type.'<br/> foreign_table = '.$foreign_table.'<br/>limit = '.$limit.'<br/>');
-    // this is for the find() function
-    if (!is_array($where)) {
-      if(($join_type==''&&$foreign_table==''&&$limit=='')) {
-        if (ctype_digit($where)) {
-        $where = 'id = '.$where;
-        }
-      }
-    } else {
+    // find() function
+    if (is_array($where)) {
       $c = count($where);
-      // echo $c;
       $idin = $has_one_where.'id IN (';
+      $idin2 = $has_one_where.'id IN (';
       for ($i=0;$i<count($where);$i++) {
+        /*
+        change to prepared statement
+         */
         $idin .= $where[$i];
+        $idin2 .= '?';
+        $values[] = $where[$i];
         if($i<count($where)-1) {
           $idin .= ',';
         }
       }
       $idin .= ')';
       $where = $idin;
+      $where2 = $idin;
     }
-    return 'SELECT *'.$select.' FROM '.self::table_name().$join_sql.' WHERE '.$where.$limit.';';
+    // dd($where2);
+    // dd($values);
+    return array('SELECT *'.$select.' FROM '.self::table_name().$join_sql.' WHERE '.$where2.$limit.';',$where2);
   }
 
   public static function search($column,$operator,$value,$limit = null) 

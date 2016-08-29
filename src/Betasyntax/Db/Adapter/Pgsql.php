@@ -1,9 +1,8 @@
-<?php
-
-namespace Betasyntax\Db\Adapter;
+<?php namespace Betasyntax\Db\Adapter;
 
 use PDO;
-use Betasyntax\Database;
+use Betasyntax\Db\DatabaseConfig;
+
 /**
  * MySQLi Pdo
  */
@@ -12,7 +11,7 @@ class Pgsql implements AdapterInterface
   private $_dbh;
   public $_rec_set;
 
-  public function connect(Database $config)
+  public function connect(DatabaseConfig $config)
   {
     $app = app();
     $dsn = sprintf('pgsql:dbname=%s;host=%s', $config->dbscheme, $config->host);

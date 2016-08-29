@@ -30,7 +30,6 @@ Class Authentication
 
   public function authenticate($req) {
     $user = User::find_by(['email'=>$req['email'],'status'=>'enabled'],1);
-    // dd($user);
     if(count($user)==1) {
       if(isset($user->email)){
         if (password_verify($req['password'], $user->password)) {

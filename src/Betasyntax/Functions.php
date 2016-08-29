@@ -67,7 +67,11 @@ if (!function_exists('view'))
    */
   function view($view = null, $data = array())
   {
-    // dd(app()->getViewObjectStr());
+
+    // set the automagicall slug name through the calling method name
+    if(!array_key_exists('slug',$data)) {
+      $data['slug'] = debug_backtrace()[1]['function'];
+    }
     $twig = app()->container->get(app()->getViewObjectStr());
     $twig->loadHelpers();
     $twig->render($view,$data);
@@ -121,7 +125,6 @@ if (!function_exists('debugbar'))
    */
   function debugbar()
   {
-    // echo app()->util->dd($data);
     return Betasyntax\DebugBar\DebugBar::getInstance();
   }
 }
