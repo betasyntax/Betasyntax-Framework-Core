@@ -11,6 +11,10 @@ use Betasyntax\Core\Container\Container as BaseContainer;
  */
 class Application 
 {
+  public $pdo_queries = array();
+  public $pdo_records = array();
+  
+  private $data = array();
   /**
    * The global application instance
    * @var object
@@ -238,4 +242,29 @@ class Application
     //boot the app and registers any middlewhere
     $this->container->addServiceProvider(new ServiceProvider($this)); 
   }
+
+  public function __set($name, $value)
+    {
+      // dd('value');
+      // dd($name);
+      $this->data[$name] = $value;
+    }
+
+    public function __get($name)
+    {
+      if (array_key_exists($name, $this->data)) {
+        return $this->data[$name];
+      }
+
+    }
+
+    public function __isset($name)
+    {
+      return isset($this->data[$name]);
+    }
+
+    public function __unset($name)
+    {
+      unset($this->data[$name]);
+    }
 }

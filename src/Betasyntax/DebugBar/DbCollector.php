@@ -22,15 +22,16 @@ Class DbCollector extends PDOCollector
     {
         $queries = array();
         $totalExecTime = 0;
-        foreach (app()->pdo_queries as $q) {
-            // list($query, $duration, $caller) = $q;
-            list($query, $duration, $caller) = $q;
-            $queries[] = array(
-                'sql' => $query,
-                'duration' => $duration,
-                'duration_str' => $this->formatDuration($duration)
-            );
-            $totalExecTime += $duration;
+        if(is_array(app()->pdo_queries)) {
+            foreach (app()->pdo_queries as $q) {
+                list($query, $duration, $caller) = $q;
+                $queries[] = array(
+                    'sql' => $query,
+                    'duration' => $duration,
+                    'duration_str' => $this->formatDuration($duration)
+                );
+                $totalExecTime += $duration;
+            }
         }
 
         return array(

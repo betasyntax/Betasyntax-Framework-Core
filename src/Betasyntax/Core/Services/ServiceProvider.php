@@ -88,6 +88,7 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
      */
     public function register()
     {   
+
         //register the rest of the service providers
         $this->setProviders($this->getProviders());
         for($i=0;$i<count($this->provides);$i++) {

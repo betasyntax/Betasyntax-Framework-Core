@@ -22,6 +22,9 @@ class BaseModel
     'fetch'  => 'stdClass'
   );
 
+  protected static $select;
+  protected static $where;
+  protected static $data;
   /**
    * [$belongs_to description]
    * @var [type]
@@ -70,8 +73,8 @@ class BaseModel
    */
   protected static $last_insert_id;
 
-  // protected static $tetimg;
-  protected static $c;
+  // protected static $record;
+  protected static $record;
 
   /**
    * [$d description]
@@ -394,8 +397,11 @@ class BaseModel
 
   private static function _getResult($sql,$data=null)
   {
+    if(count(self::$data)!=0) {
+      $data = self::$data;
+    }
     self::$result = self::$db->fetch($sql,$data);
-    self::$c = self::$result;
+    self::$record = self::$result;
     if (count(self::$result)==1) {
       return (object) self::$result[0];
     } else {
@@ -466,7 +472,18 @@ class BaseModel
       $idin .= ')';
       $where2 = $idin;
     }
-    return array('SELECT *'.$select.' FROM `'.self::table_name().'`'.$join_sql.' WHERE '.$where2.$limit,$where2);
+    if(self::$select=='') {
+      self::$select = 'SELECT *'.$select;
+    }
+    if(self::$select =='' && self::$where=='') {
+      self::$where = ' WHERE '.$where2;
+    } elseif (self::$where != '') {
+      self::$where = ' WHERE '.self::$where;    
+    } else {
+      self::$where = $where2;
+    }
+    $sql_stub = self::$select.' FROM `'.self::table_name().'`'.$join_sql.self::$where.$limit;
+    return array($sql_stub,$where2);
   }
 
   public static function search($column,$operator,$value,$limit = null) 
@@ -514,34 +531,35 @@ class BaseModel
   {
     self::instance();
     $sql = "SHOW COLUMNS FROM ".self::table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
-    self::$c = new StdClass;
+    self::$record = new StdClass;
     self::$result = self::$db->fetch( $sql );
     for ($i=0;$i<count(self::$result);$i++) {
       $d = (string) self::$result[$i]->Field;
-      self::$c->{$d} = null;
+      self::$record->{$d} = null;
     }
-    return self::$c;
+    return self::$record;
   }
 
   public static function save() 
   { 
     self::instance();
-    if (self::validate() === false) {
-      return false;
-    }
     # Table Name && Created/Updated Fields
     $table_name = self::table_name();
 
-    $data = self::$c;
+    $data = self::$record;
     $time = date('Y-m-d H:i:s');
-    if (is_array(self::$c)) {
+    if (is_array(self::$record)) {
       //existing
-      $data = self::$c[0];
+      $data = self::$record[0];
       $data->updated_at = $time;
-      self::$id = $data->id;
+      if(isset($data->id)) {
+        self::$id = $data->id;
+      } else {
+        // return false;
+      }
     } else {
       //new record
-      $data = self::$c;
+      $data = self::$record;
       $data->created_at = $time;
       $data->updated_at = '0000-00-00 00:00:00';
     }
@@ -551,40 +569,95 @@ class BaseModel
     $sql_set_string = '';
     $total_properties_count = count($properties);
     $x = 0;
-
-    foreach ($properties as $k=> $v) { 
-      $qt='';
+    // first create values 
+    foreach ($properties as $k=> $v) {
       $val = $v->Field;
       $type = $v->Type;
-      $column_quote = ['tinyint','smallint','mediumint','int','bigint','float','double','decimal'];
-      if (!self::strpos_array($type,$column_quote))
-        $qt='"';
-      $sql_set_string .= $val.'='.$qt.addslashes($data->$val).$qt;
-      $x++;
-      if ($x != $total_properties_count) { 
-        $sql_set_string .= ', '; 
+      if(isset($data->$val)) {
+        if($data->$val == NULL) {
+          $values[] = '';
+        } else {
+          $values[] = str_replace("`", "``", $data->$val);
+        }
+        $x++;
+      }
+    }
+    // set the sql statement
+    if (count($values)!=$total_properties_count) {
+      $total_properties_count = count($values);
+    }
+    foreach ($properties as $k=> $v) {
+      $val = $v->Field;
+      $type = $v->Type;
+      if(isset($data->$val)) {
+        $sql_set_string .= '`'.$val.'` = ?';
+        if ($x <= $total_properties_count+1) { 
+          $sql_set_string .= ', '; 
+        } else {  
+          $sql_set_string .= '';     
+        }
+        $x++;
       }
     }
 
     # Final SQL Statement
-    $sql = $table_name." SET ".$sql_set_string;
+    $sql2 = '`'.$table_name."` SET ".$sql_set_string;
     if (self::exists()) { 
-      $final_sql = 'UPDATE '.$sql.' WHERE id='.$data->id.';';
+      $final_sql = 'UPDATE '.$sql2.' WHERE `id` = ?;';
+      $values[] = $data->id;
     } else { 
-      $final_sql = "INSERT INTO ".$sql.';';
+      $final_sql = "INSERT INTO ".$sql2.';';
     }
-    # Bind Vars
-    foreach ($properties as $k => $v) { 
-      $bind_vars[($k)] = $v->Field;
+
+    if (static::validate() === false) {
+      return false;
     }
-    // var_dump($final_sql);
-    $q = self::$db->execute($final_sql);
+    $q = false;
+    if (self::validate()) {
+      $q = self::$db->execute($final_sql, $values);
+    }
+    self::$record = new stdClass;
     if ($q) {
-      // self::$last_insert_id = $q->id;
       return true;
     } else {
       return false;
     }
+  }
+
+  public function select($sql=null) {
+    if(is_array($sql)) {
+      $sql_statement = 'SELECT ';
+      //loop through the array creating a string
+      for($i=0;$i<count($sql);$i++) {
+        $col = str_replace('.','`.`',$sql[$i]);
+        if ($i == count($sql)-1) {
+          $sql_statement .= '`'.$col.'` ';
+        } else {
+          $sql_statement .= '`'.$col.'`, ';
+        }
+      }
+    } elseif (is_string($sql)) {
+      // not forced to do prepared statements but its there
+      $sql_statement = str_replace('SELECT ','',$sql);
+      $sql_statement = "SELECT ".$sql." ";
+    } else {
+      // no sql provided select all
+      self::all();
+    }
+    self::$select = $sql_statement;
+    return $this;
+  }
+
+  public function where($sql='',$data=null) {
+    //set the where sql
+    self::$where = $sql;
+    self::$data = $data;
+    return $this;
+  }
+
+  public function get() {
+    $sql = self::_getSql('',self::$data);
+    return self::_getResult($sql[0],self::$data);
   }
 
   private static function strpos_array($haystack, $needles) 

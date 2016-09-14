@@ -9,7 +9,7 @@ interface AdapterInterface
 {
     public function connect(DatabaseConfig $config);
     public function fetch($sql);
-    public function execute($sql);
+    public function execute($sql,$data);
     public function columnMeta();
     public function columnCount();
 }

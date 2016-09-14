@@ -38,18 +38,20 @@ class Mysql implements AdapterInterface
       $end = microtime(true);
       $difference = $end - $started;
       $queryTime = number_format($difference, 10);
-      app()->debugbar->addCollector(new \Betasyntax\DebugBar\DbCollector());
+      $app->debugbar->addCollector(new \Betasyntax\DebugBar\DbCollector());
       $app->pdo_queries[] = [$sql,$queryTime,'test'];
       $app->pdo_records[] = $this->_rec_set;
     }
     return $this->_rec_set;  
   }
-  public function execute($sql)
+  public function execute($sql,$data)
   {
-    return $this->_dbh->exec($sql);
+    $sth = $this->_dbh->prepare($sql);
+    $test = $sth->execute($data);
+    return $test;
   }
   public function columnMeta() 
-  {
+  { 
     return $this->_dbh->getColumnMeta(0);
   }
   public function columnCount() 
