@@ -13,7 +13,7 @@ if ( ! function_exists('app'))
    */
   function app()
   {
-    return Betasyntax\Core\Application::getInstance();
+    return \Betasyntax\Core\Application::getInstance();
   }
 }
 
@@ -67,7 +67,6 @@ if (!function_exists('view'))
    */
   function view($view = null, $data = array())
   {
-
     // set the automagicall slug name through the calling method name
     if(!array_key_exists('slug',$data)) {
       $data['slug'] = debug_backtrace()[1]['function'];

@@ -43,10 +43,12 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
         }
     }
 
+
     private function getProviders()
     {
         return $serviceProviders = config('app','providers');
     }
+
     /**
      * In much the same way, this method has access to the container
      * itself and can interact with it however you wish, the difference
@@ -60,23 +62,17 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
      */
     public function boot()
     {
-        //this will automatically make containers for all of our classes.
-        $this->getContainer()->delegate(
-          new \League\Container\ReflectionContainer
-        );
-        // these are the core of the system. 
-        // Only load debug bar in production mode
-        if(!$this->app->isProd()) {
-            $this->app->debugbar = $this->container->get('Betasyntax\DebugBar\DebugBar');
-            debugStack('Application');
-        }
+        $this->container->add('Betasyntax\Config');
         $this->app->config = $this->container->get('Betasyntax\Config');
-        $this->app->mountManager = $this->container->get('Betasyntax\Core\MountManager\Mounts');
-        $this->app->logger = $this->container->get('Betasyntax\Logger\Logger');
-        $this->app->helpers = $this->container->get('App\Functions');  
-        $this->app->router = $this->container->get('Betasyntax\Router\Router');  
-        // debug the application object
-        // register any user provided middlewares
+        $this->setProviders($this->getProviders());
+        $this->provides = config('app','core_providers');
+        foreach ($this->provides as $key => $value) {
+            if ($key=='view') {
+                $this->app->viewClass = $value;
+            }
+            $this->container->add($value);
+            $this->app->$key = $this->container->get($value);                    
+        }
         $this->register();
     }
 
@@ -88,11 +84,9 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
      */
     public function register()
     {   
-
-        //register the rest of the service providers
-        $this->setProviders($this->getProviders());
-        for($i=0;$i<count($this->provides);$i++) {
-            $this->getContainer()->add($this->provides[$i]);
+        $providers = config('app','core_providers');
+        foreach ($providers as $key => $value) {
+            $this->getContainer()->add($value);
         }
     }
 }

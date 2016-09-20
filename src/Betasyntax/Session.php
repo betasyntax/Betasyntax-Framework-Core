@@ -39,7 +39,7 @@ class Session
 
   public function startSession()
   {
-    if ($this->sessionState == self::SESSION_NOT_STARTED ) {
+    if ($this->sessionState == self::SESSION_NOT_STARTED && !headers_sent()) {
       $this->sessionState = session_start();
     }
     return $this->sessionState;

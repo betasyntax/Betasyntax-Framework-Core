@@ -6,6 +6,7 @@ use Exception;
 use Relay\RelayBuilder;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Betasyntax\Core\Application;
 
 class Router {
 	/**
@@ -53,8 +54,8 @@ class Router {
 			$routes = include $this->app->getBasePath().'/app/routes.php';
 		}
 		// get the middleware array
-    $this->appMiddleware = $this->getMiddleWareArray();
-    // set the controller dir
+	    $this->appMiddleware = $this->getMiddleWareArray();
+	    // set the controller dir
 		$this->controllersDir = $this->app->getBasePath().'/app/Controllers/';
 		// get all the routes
 		$this->addRoutes($routes);
@@ -80,10 +81,10 @@ class Router {
 	 * Get the middle ware array
 	 * @return [type] [description]
 	 */
-  private function getMiddleWareArray()
-  {
-  	return config('app','middleware');
-  }
+	  private function getMiddleWareArray()
+	  {
+	  	return config('app','middleware');
+	  }
 
 	/**
 	 * Retrieves all routes.
@@ -216,7 +217,7 @@ class Router {
 	 * @param string $requestMethod
 	 * @return array|boolean Array with route information on success, false on failure (no match).
 	 */
-	public function dispatch($requestUrl = null, $requestMethod = null) 
+	public function dispatch(Application $app, $requestUrl = null, $requestMethod = null) 
 	{
 		$params = array();
 		$match = false;
@@ -334,7 +335,11 @@ class Router {
 					  }
 				  }
 				  //get the request array
-			  	$requestMethod = $_SERVER['REQUEST_METHOD'];
+				if (defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) { 
+					$requestMethod = $requestMethod;
+				} else {
+			  		$requestMethod = $_SERVER['REQUEST_METHOD'];
+				}
 			  	//instantiate our request and response for Relay
 			  	$request = new Request($requestMethod,$requestUrl);
 			  	$response = new Response;
@@ -352,14 +357,20 @@ class Router {
 					$relay = $relayBuilder->newInstance($queue);
 					//run the middleware against our controller
 					$response = $relay($request, $response);
-					//finally if all our middleware passed on the response we can then run our intended controller action
-				  $instance->$method($mm['params']);
-				  $this->routeFound=true;
+					//finally if all our middleware passed on the response we can then run our intended controller action				
+					if (!defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) { 
+						$instance->$method($mm['params']);
+					} 
+					$this->routeFound=true;
 				}
 			}
 		}
 		if(!$this->routeFound) {
-			view('Errors/404.haml'); 
+			if (defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) { 
+				return true;
+			} else {
+				view('Errors/404.haml'); 	
+			}
 		} else {
 			return false;
 		}

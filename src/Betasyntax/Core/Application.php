@@ -11,10 +11,24 @@ use Betasyntax\Core\Container\Container as BaseContainer;
  */
 class Application 
 {
+  /**
+   * Access to the pdo_queries
+   * @var array
+   */
   public $pdo_queries = array();
+
+  /**
+   * Access to the pdo_queries
+   * @var array
+   */
   public $pdo_records = array();
   
+  /**
+   * Access to the dynamic properties created by the service providers
+   * @var array
+   */
   private $data = array();
+
   /**
    * The global application instance
    * @var object
@@ -25,7 +39,7 @@ class Application
    * The version number
    * @var string
    */
-  protected $version = '0.0.3';
+  protected $version = '0.0.6';
 
   /**
    * The base path of the application
@@ -131,6 +145,11 @@ class Application
   public $trace;
 
   /**
+   * Access to the class of the view service
+   * @var string
+   */
+  public $viewClass;
+  /**
    * Create a new Illuminate application instance.
    *
    * @param  string|null  $basePath
@@ -139,6 +158,7 @@ class Application
   
   public function __construct($basePath = null)
   {    
+
     //set the instance and store a reference to itself
     if(static::$instance==null)
       static::$instance=$this;
@@ -151,6 +171,10 @@ class Application
       errReporter();
     //boot the app
     $this->boot();
+    // Only load debug bar in production mode
+    if(!$this->isProd()) {
+      debugStack('Application');
+    }
 
   }
 
@@ -221,12 +245,7 @@ class Application
    */
   public function getViewObjectStr()
   {
-    for($i=0;$i<count($this->appProviders);$i++) {
-      foreach ($this->appProviders[$i] as $k => $v) {
-        if ($k == 'view')
-          return $v;
-      }
-    }
+    return $this->viewClass;
   }
 
   /**
@@ -243,26 +262,44 @@ class Application
     $this->container->addServiceProvider(new ServiceProvider($this)); 
   }
 
+  /**
+   * Magic function to set a dynamic property
+   * @param string $name The name of the property
+   * @param object $value Can be any php type
+   */
   public function __set($name, $value)
     {
-      // dd('value');
-      // dd($name);
       $this->data[$name] = $value;
+      // $this->$key = $value;
     }
 
+    /**
+     * A magic function to get the dynamic property
+     * @param string $name The name of the property
+     * @return object Returns the property object
+     */
     public function __get($name)
     {
       if (array_key_exists($name, $this->data)) {
         return $this->data[$name];
       }
-
+      // return $name;
     }
 
+    /**
+     * A magic function to tell us if the property is set or not.
+     * @param string $name Name of the property to check
+     * @return boolean Returns true or false if the property is set
+     */
     public function __isset($name)
     {
       return isset($this->data[$name]);
     }
 
+    /**
+     * Magic method to garbage collect our unused properties
+     * @param string $name Property name
+     */
     public function __unset($name)
     {
       unset($this->data[$name]);
