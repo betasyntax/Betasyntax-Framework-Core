@@ -13,6 +13,12 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
     protected $app;
 
     /**
+     * The middleware array
+     * @var array
+     */
+    protected $middleware = [];
+
+    /**
      * The provides array is a way to let the container
      * know that a service is provided by this service
      * provider. Every service that is registered via
@@ -66,12 +72,16 @@ class ServiceProvider extends AbstractServiceProvider implements BootableService
         $this->app->config = $this->container->get('Betasyntax\Config');
         $this->setProviders($this->getProviders());
         $this->provides = config('app','core_providers');
+        $this->middleware = config('app','middleware');
         foreach ($this->provides as $key => $value) {
             if ($key=='view') {
                 $this->app->viewClass = $value;
             }
             $this->container->add($value);
             $this->app->$key = $this->container->get($value);                    
+        }
+        foreach ($this->middleware as $key => $value) {
+            $this->container->add($value);
         }
         $this->register();
     }
