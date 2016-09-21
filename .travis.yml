@@ -18,7 +18,8 @@ matrix:
 
 sudo: false
 
-before_install:
+before_install:  
+  - if [[ $TRAVIS_PHP_VERSION != 7.1 ]] ; then phpenv config-rm xdebug.ini; fi
   - travis_retry composer self-update
 
 install:
@@ -27,3 +28,8 @@ install:
   - if [[ $setup = 'lowest' ]]; then travis_retry composer update --prefer-dist --no-interaction --prefer-lowest --prefer-stable; fi
 
 script: vendor/bin/phpunit
+
+matrix:
+  allow_failures:
+    - php: 7.1
+  fast_finish: true
