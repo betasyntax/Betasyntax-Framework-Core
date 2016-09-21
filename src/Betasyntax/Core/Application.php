@@ -165,7 +165,9 @@ class Application
     //set the base path so we can use it for other plugins in the system
     $this->setBasePath($basePath);
     //configure dotenv
-    $this->getEnvironment();
+    if (defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) {
+      $this->getEnvironment();
+    }
     //load the backtrace if we are in development and turn on error reporting
     if (!$this->isProd())
       errReporter();
