@@ -8,7 +8,7 @@ class Config {
 
   public function __construct() {
     if (defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) {
-      $basepath = __dir__.'/config/';
+      $basepath = __dir__.'/../../tests/config/';
     } else {
       $basepath = (string) app()->getBasePath().'/config/';
     }
