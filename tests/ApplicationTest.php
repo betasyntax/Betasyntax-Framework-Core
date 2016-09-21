@@ -10,7 +10,7 @@ Class ApplicationTest extends TestCase
 
   public function setUp(){
     // @session_start();
-    $this->path = __DIR__.'/../../../../';
+    $this->path = __DIR__.'/../';
     parent::setUp();
   }
 
