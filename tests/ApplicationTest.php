@@ -10,7 +10,7 @@ Class ApplicationTest extends TestCase
 
   public function setUp(){
     // @session_start();
-    $this->path = __DIR__.'/../';
+    $this->path = __DIR__.'/../../../../../public';
     parent::setUp();
   }
 
@@ -19,6 +19,10 @@ Class ApplicationTest extends TestCase
    */
   public function testCase()
   {
+require __DIR__.'/../../../../../vendor/autoload.php';
+// $app = new Betasyntax\Core\Application(__DIR__.'/../../../../../public');
+
+
     $this->app = new Application($this->path);
     $this->assertInstanceOf(Application::class, $this->app);
     $this->assertObjectHasAttribute('router', $this->app);
