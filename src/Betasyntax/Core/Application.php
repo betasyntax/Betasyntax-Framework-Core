@@ -167,6 +167,8 @@ class Application
     //configure dotenv
     if (defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) {
       $this->getEnvironment();
+    } else {
+      $this->env['env']='prod'
     }
     //load the backtrace if we are in development and turn on error reporting
     if (!$this->isProd())
