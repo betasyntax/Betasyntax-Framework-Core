@@ -19,7 +19,7 @@ Class ApplicationTest extends TestCase
    */
   public function testCase()
   {
-require __DIR__.'/../../../../../vendor/autoload.php';
+// require __DIR__.'/../../../../../vendor/autoload.php';
 // $app = new Betasyntax\Core\Application(__DIR__.'/../../../../../public');
 
 
