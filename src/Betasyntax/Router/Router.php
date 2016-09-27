@@ -51,11 +51,13 @@ class Router {
 	{
 		$this->app = app()->getInstance();
 		if(!$routes) {
-			$routes = include $this->app->getBasePath().'/app/routes.php';
+			if (!defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) {
+				$routes = include $this->app->getBasePath().'/app/routes.php';
+			}
 		}
 		// get the middleware array
-	    $this->appMiddleware = $this->getMiddleWareArray();
-	    // set the controller dir
+	    	$this->appMiddleware = $this->getMiddleWareArray();
+	    	// set the controller dir
 		$this->controllersDir = $this->app->getBasePath().'/app/Controllers/';
 		// get all the routes
 		$this->addRoutes($routes);
