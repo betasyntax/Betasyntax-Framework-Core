@@ -24,7 +24,7 @@ Class ViewHaml extends ViewProvider
 
     $this->twig->clearCacheFiles();
     $this->twig->addExtension(new HamlExt());
-    if(!defined("PHPUNIT_BETASYNTAX_TESTSUITE"==true)) {
+    if (!defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) {
       $this->loadHelpers();
       $this->loadLocalHelpers();
     }
