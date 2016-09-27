@@ -57,7 +57,7 @@ Class ApplicationTest extends TestCase
   public function testEnvironmentIsSet()
   {
     $this->app = new Application($this->path);
-    $this->assertEquals('local',$this->app->env['env']);
+    $this->assertEquals('test',$this->app->env['env']);
   }
 
   public function testRouterDispatcher()
@@ -65,6 +65,6 @@ Class ApplicationTest extends TestCase
     $app = new Application($this->path);
     $url = '/welcome';
     $method = "GET";
-    $this->assertFalse($app->router->dispatch($app,$url,$method));
+    $this->assertTrue($app->router->dispatch($app,$url,$method));
   }
 }
