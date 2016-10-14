@@ -10,6 +10,7 @@ class Mysql implements AdapterInterface
 {
   public $_dbh;
   public $_rec_set;
+  public $lastId;
 
   public function connect(DatabaseConfig $config)
   {
@@ -46,8 +47,23 @@ class Mysql implements AdapterInterface
   }
   public function execute($sql,$data)
   {
+    $app = app();
+    $started = microtime(true);
     $sth = $this->_dbh->prepare($sql);
+
     $test = $sth->execute($data);
+
+    $this->lastId = $this->_dbh->lastInsertId();
+    if( ! $app->isProd()) {
+      $end = microtime(true);
+      $difference = $end - $started;
+      $queryTime = number_format($difference, 10);
+      $app->debugbar->addCollector(new \Betasyntax\DebugBar\DbCollector());
+      $app->pdo_queries[] = [$sql,$queryTime,'test'];
+      $app->pdo_records[] = $this->_rec_set;
+      dd($app->pdo_queries);
+    }
+
     return $test;
   }
   public function columnMeta() 

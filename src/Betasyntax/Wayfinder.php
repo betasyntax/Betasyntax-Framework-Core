@@ -7,15 +7,28 @@ use App\Models\Menu;
 class Wayfinder 
 {
   private static $activePage;
-  //default parent id is 1 (home). You also need to set a 
   private static $data = array();
   private static $cnt = 0;
 
-  public static function getMenu($parent_id)
+  public static function getMenu($parent_id,$cat_id = 0)
   {
-    $sql = "SELECT * FROM menus WHERE parent_id = ".$parent_id." AND status = 'enabled' ORDER BY site_order;";
-    self::$cnt++;
-    return Menu::raw($sql);
+    $model = new Menu;
+    $arrayCategories = array();
+    $sql = "SELECT * FROM menus WHERE status = 'enabled' AND category_id = ".$cat_id." ORDER BY site_order;";
+    $data = $model->raw($sql);
+    if (count($data)>0) {
+      foreach ($data as $key => $value) {
+        $arrayCategories[$value->id] = array(
+          "parent_id" => $value->parent_id, 
+          "name" => $value->title, 
+          "url" => $value->url,
+          "type" => $value->type,
+          "status" => $value->status,
+          "slug" => $value->slug
+        );
+      }
+    }
+    return $arrayCategories;
   }
 
   public static function _setSlug($slug) 
@@ -27,66 +40,46 @@ class Wayfinder
   {
     return self::$activePage;
   }
-  
-  public static function tree($parent_id) 
-  {
-    $result = self::getMenu($parent_id);
-    if(self::$cnt==1) {
-      echo '<ul class="mainmenu">';
-    } else {
-      echo '<ul>';
+    
+  public static function createTreeView($array, $currentParent, $running = false,$id='mainmenu', $currLevel = 0, $prevLevel = -1 ) {
+    if($running) {
+      self::$cnt=0;
     }
-    $counter = 0;
-    $row_total = count($result);
-    for ($row=0; $row < $row_total; $row++) { 
-      $t = self::getMenu($result[$row]->id);
+    foreach ($array as $categoryId => $category) {
       $active = '';
       $opt = '';
-      if (self::$activePage == $result[$row]->slug)
-        $active=' class="active"';
-      if ($result[$row]->type=='external') {
-        $url='#';
-        $opt = 'onClick="window.open(\''.$result[$row]->url.'\')"';
-      } else {
-        $url='/'.$result[$row]->url;
-      }
-      echo '<li'.$active.'><a href="'.$url.'" '.$opt.'>'.$result[$row]->title.'</a>';
-      if (count($t)>0){
-        echo '<ul>';
-          for ($row2=0; $row2 < count($t); $row2++) { 
-            $z=$t;
-            if (is_array($t)) {
-              $z=$t[$row2];
-            }
-            if (self::$activePage == $z->slug)
-              $active=' class="active"';
-            if ($z->type=='external') {
-              $url2='#';
-              $opt = 'onClick="window.open("'.$z->url.'")"';
-            } else {
-              // var_dump($z->url);
-              if(substr( $z->url, 0, 1 ) === "\/") {
-                $url2=$z->url;
-              } else {
-                $url2='/'.$z->url;
-              }
-            }
-            echo '<li'.$active.'><a href="'.$url2.'" '.$opt.'>'.$z->title.'</a></li>';
-            // self::tree($row2->id);
-          }
-        echo '</ul>';
-      }
-      echo '</li>';
-      if ($counter == ($row_total - 1)) {
-        if (app()->session->isLoggedIn==1) {
-          echo '<li class="auth"><a href="/logout">Logout</a></li>';
+      if ($currentParent == $category['parent_id']) {  
+        if (self::$activePage == $category['slug'])
+          $active=' class="active"';
+        if ($category['type']=='external') {
+          $url='#';
+          $opt = 'onClick="window.open(\''.$category['url'].'\')"';
         } else {
-          echo '<li class="auth"><a href="/login">Login</a></li>';
-          echo '<li class="auth"><a href="/signup">Sign Up</a></li>';
+          $url='/'.$category['url'];
         }
-      }
-      $counter++;
+        if (self::$cnt==0 ) {
+          echo '<ul class='.$id.'>'; 
+        }          
+        if ($currLevel > $prevLevel) {
+          if(self::$cnt !=0)
+            echo "<ul>"; 
+        }
+
+        if ($currLevel == $prevLevel) echo " </li> ";
+
+        echo '<li'.$active.'>';
+        echo '<a href="'.$url.'" '.$opt.'>'.$category['name'].'</a>';
+
+        if ($currLevel > $prevLevel) { 
+          $prevLevel = $currLevel; 
+        }
+        $currLevel++; 
+        self::$cnt++;
+        self::createTreeView ($array, $categoryId, false, $id, $currLevel, $prevLevel);
+        $currLevel--;
+      }   
     }
-    echo '</ul>';
+    if ($currLevel == $prevLevel) 
+      echo " </li>  </ul> ";
   }
 }

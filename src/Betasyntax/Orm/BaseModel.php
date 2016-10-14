@@ -15,146 +15,147 @@ class BaseModel
    * Configuration storage
    * @var array
    */
-  protected static $config = array(
+  protected  $config = array(
     'driver' => 'mysql',
     'host'   => 'localhost',
     'port'   => 3307,
     'fetch'  => 'stdClass'
   );
 
-  protected static $select;
-  protected static $where;
-  protected static $data;
+  protected $select;
+  protected $where;
+  protected $data;
   /**
    * [$belongs_to description]
    * @var [type]
    */
-  public static $belongs_to;
+  public $belongs_to;
+
+  public $lastId;
+  /**
+   * [$has_one description]
+   * @var [type]
+   */
+  public $has_one;
 
   /**
    * [$has_one description]
    * @var [type]
    */
-  public static $has_one;
+  public $has_many;
 
   /**
    * [$has_one description]
    * @var [type]
    */
-  public static $has_many;
+  public $has_many_through;
 
   /**
    * [$has_one description]
    * @var [type]
    */
-  public static $has_many_through;
+  public $has_one_through;
 
   /**
    * [$has_one description]
    * @var [type]
    */
-  public static $has_one_through;
+  public $has_and_belongs_to_many;
 
   /**
    * [$has_one description]
    * @var [type]
    */
-  public static $has_and_belongs_to_many;
-
-  /**
-   * [$has_one description]
-   * @var [type]
-   */
-  public static $select_as;
+  public $select_as;
 
   /**
    * [$last_insert_id description]
    * @var [type]
    */
-  protected static $last_insert_id;
+  protected $last_insert_id;
 
-  // protected static $record;
-  protected static $record;
-
-  /**
-   * [$d description]
-   * @var [type]
-   */
-  protected static $d;
+  // protected $record;
+  protected $record;
 
   /**
    * [$d description]
    * @var [type]
    */
-  protected static $properties = array();
+  protected $d;
+
+  /**
+   * [$d description]
+   * @var [type]
+   */
+  protected $properties = array();
 
   /* Static instances */
   /**
    * Multiton instances
    * @var array
    */
-  protected static $instance  = array();
+  protected $instance  = array();
 
   /**
    * [$arguments description]
    * @var array
    */
-  protected static $arguments = array( 'driver', 'host', 'database', 'user', 'password' );
+  protected $arguments = array( 'driver', 'host', 'database', 'user', 'password' );
 
   /* Constructor */
   /**
    * Database connection
    * @var PDO
    */
-  protected static $db;
+  protected $db;
 
   /**
    * Latest query statement
    * @var PDOStatement
    */
-  protected static $result;
+  protected $result;
 
   /**
    * Database information
    * @var stdClass
    */
-  protected static $info;
+  protected $info;
 
   /**
    * Statements cache
    * @var array
    */
-  protected static $table_name = '';
+  protected $table_name = '';
 
   /**
    * [$statement description]
    * @var array
    */
-  protected static $statement = array();
+  protected $statement = array();
 
   /**
    * [$columns description]
    * @var array
    */
-  protected static $columns = array();
+  protected $columns = array();
 
   /**
    * Tables shema information cache
    * @var array
    */
-  protected static $table = array();
+  protected $table = array();
 
   /**
    * [$id description]
    * @var [type]
    */
-  protected static $id;
+  protected $id;
 
   /**
    * Primary keys information cache
    * @var array
    */
-  protected static $key = array();
+  protected $key = array();
 
   public function __construct ($config = false) 
   {
@@ -169,49 +170,28 @@ class BaseModel
       $config->password = $dbconfig['pass'];
       $config->dbscheme = $dbconfig['schema'];
     }
-    self::$db = DbFactory::connect($config);
-    if ( ! self::$db) {
+    $this->db = DbFactory::connect($config);
+    if ( ! $this->db) {
         $debugbar = app()->debugbar;
         $debugbar::$debugbar['exceptions']->addException(new Exception('Error connecting to database. Please check your settings'));
       flash()->error('Error connecting to database. Please check your settings');
     }
     restore_exception_handler();
-    self::$info = (object) array(self::$arguments);
-    unset(self::$info->password);
-  }
-
-  static public function __callStatic ($name, $config) 
-  {
-    if (isset(static::$instance[$name])) {
-      return static::$instance[$name];
-    }
-    $config = array_merge(
-      static::config(),
-      array_filter( 
-        array_combine( 
-          static::$arguments, 
-          $config + array_fill( 
-            0, 
-            count(static::$arguments), 
-            null
-          )
-        )
-      )
-    );
-    return static::$instance[$name] = new static();
+    $this->info = (object) array($this->arguments);
+    unset($this->info->password);
   }
 
   public function __get($key) { 
-    self::instance();
-    return self::$properties[$key];
+    // $this->instance();
+    return $this->properties[$key];
   }
   
   public function __set($key, $value) { 
-    self::instance();
-    return self::$properties[$key] = $value;
+    // $this->instance();
+    return $this->properties[$key] = $value;
   }
 
-  static public function config ($key = null, $value = null) 
+  public function config ($key = null, $value = null) 
   {
     if (!isset($key)) {
       return static::$config;
@@ -227,17 +207,17 @@ class BaseModel
     }
   }
 
-  public static function safe_exception (Exception $exception) 
+  public function safe_exception (Exception $exception) 
   {
     die('Uncaught exception: '.$exception->getMessage());
   }
 
   public function __toString () 
   {
-    return self::$result ? self::$result->queryString : null;
+    return $this->result ? $this->result->queryString : null;
   }  
 
-  public static function table_name() 
+  public function table_name() 
   {
     $class = get_called_class();
     $vowels = array('a','e','i','o');
@@ -251,34 +231,34 @@ class BaseModel
     return end($class);
   }
 
-  public static function raw($sql) 
+  public function raw($sql) 
   {
-    self::instance();
-    return self::_getResult($sql);
+    // $this->instance();
+    return $this->getResult($sql);
   }
 
-  public static function exec($sql) 
+  public function exec($sql) 
   {
-    self::instance();
-    self::$result = self::$db->query($sql);
-    return self::$result;
+    // $this->instance();
+    $this->result = $this->db->query($sql);
+    return $this->result;
   }
 
-  public static function all($extra_unsafe_sql = false) 
+  public function all($extra_unsafe_sql = false) 
   { 
-    self::instance();
-    $sql = "SELECT * FROM ". self::table_name();
+    // $this->instance();
+    $sql = "SELECT * FROM ". $this->table_name();
     if ($extra_unsafe_sql) { 
       $sql .= " ".$extra;
     }
     $sql .= ";";
-    return self::_getResult($sql);
+    return $this->getResult($sql);
   }
 
-  public static function delete($id) {
-    self::instance();
-    $sql = 'DELETE FROM ' . self::table_name() . ' WHERE id = ' . $id;
-    $q = self::$db->execute($sql);
+  public function delete($id) {
+    // $this->instance();
+    $sql = 'DELETE FROM ' . $this->table_name() . ' WHERE id = ' . $id;
+    $q = $this->db->execute($sql);
     if ($q) {
       return true;
     } else {
@@ -286,11 +266,11 @@ class BaseModel
     }
   }
 
-  public static function find_by($args,$limit='',$join_type='',$foreign_table='') 
+  public function find_by($args,$limit='',$join_type='',$foreign_table='') 
   { 
     // set the instance
-    self::instance();
-    $type = new PdoValueBinder(self::$db->_dbh);
+    // $this->instance();
+    $type = new PdoValueBinder($this->db->_dbh);
     //loop through find by and get the where statments
     if (isset($args) && is_array($args)) {
       try {
@@ -319,7 +299,7 @@ class BaseModel
             // if the value is an array lets loop through it and build the actual sql clause
             if(is_array($value)) {
               // values begin here
-              $where = self::table_name().'.? IN (';
+              $where = $this->table_name().'.? IN (';
               $values[] = $type->type($key);
               // loop through array to get the values
               for($i=0;$i<count($value);$i++) {
@@ -348,7 +328,7 @@ class BaseModel
                 $sql_where .= ' OR ';
               }
             } else {
-              $sql_where .= '`'.self::table_name().'`.`'.$key.'` = ? '.$and;
+              $sql_where .= '`'.$this->table_name().'`.`'.$key.'` = ? '.$and;
               $values[] = $type->type($value);
             }
             $cnt++;
@@ -365,8 +345,9 @@ class BaseModel
               $values[] = $type->type($args[$i]);
             }
           }
-          $sql_where .= self::table_name().'.id IN ('.$where;
+          $sql_where .= $this->table_name().'.id IN ('.$where;
         }
+        $sql_where = ' WHERE '.$sql_where;
       } catch (Exception $e) {
         $debugbar = app()->debugbar;
         $debugbar::$debugbar['exceptions']->addException($e);
@@ -375,41 +356,41 @@ class BaseModel
       // if the just provided a single numeric value send it to find to handle
       return static::find($args,$join_type,$foreign_table);
     }
-    $sql2 = self::_getSql($join_type,$foreign_table,$sql_where,$limit);  
-    $x2 = self::_getResult($sql2[0],$values);
+    $sql2 = $this->_getSql($join_type,$foreign_table,$sql_where,$limit);  
+    $x2 = $this->getResult($sql2[0],$values);
     return $x2;
   }
 
-  public static function find($id,$join_type='',$foreign_table='') 
+  public function find($id,$join_type='',$foreign_table='') 
   { 
-    self::instance();
+    // $this->instance();
     if(is_array($id)) {
       //we have an array lets use find by instead
       return static::find_by($id,'',$join_type,$foreign_table);
     } elseif(is_numeric($id)) {
-      $where = self::table_name().'.id = ?';
-      $sql = self::_getSql($join_type,$foreign_table,$where);
-      return self::_getResult($sql[0],$id);
+      $where = ' WHERE '.$this->table_name().'.id = ?';
+      $sql = $this->_getSql($join_type,$foreign_table,$where);
+      return $this->getResult($sql[0],array($id));
     } else {
       return null;
     }
   }
 
-  private static function _getResult($sql,$data=null)
+  private function getResult($sql,$data=null)
   {
-    if(count(self::$data)!=0) {
-      $data = self::$data;
+    if(count($this->data)!=0) {
+      $data = $this->data;
     }
-    self::$result = self::$db->fetch($sql,$data);
-    self::$record = self::$result;
-    if (count(self::$result)==1) {
-      return (object) self::$result[0];
+    $this->result = $this->db->fetch($sql,$data);
+    $this->record = $this->result;
+    if (count($this->result)==1) {
+      return (object) $this->result[0];
     } else {
-      return self::$result;
+      return $this->result;
     }
   }
 
-  private static function _getSql($join_type='',$foreign_table='',$where='',$limit='')
+  private function _getSql($join_type='',$foreign_table='',$where='',$limit='')
   {
     // holds the join string
     $join_sql = '';
@@ -441,16 +422,16 @@ class BaseModel
         $select .= ',`'.$foreign_table.'`.`id` as `'.$foreign_table.'_id`';
         switch ($join_type) {
           case 'has_one':
-            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.self::table_name().'`.`id`=`'.$foreign_table.'`.`'.self::table_name().'_id`';
-            // $where = '`'.self::table_name().'`.`id` = '.$where;
-            $where2 = '`'.self::table_name().'`.`id` = ?';
+            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.$this->table_name().'`.`id`=`'.$foreign_table.'`.`'.$this->table_name().'_id`';
+            // $where = '`'.$this->table_name().'`.`id` = '.$where;
+            $where2 = '`'.$this->table_name().'`.`id` = ?';
             break;
           case 'belongs_to':
-            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.self::table_name().'`.`'.$foreign_table.'_id`=`'.$foreign_table.'`.`id`';
-            $has_one_where = '`'.self::table_name().'`.';
+            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.$this->table_name().'`.`'.$foreign_table.'_id`=`'.$foreign_table.'`.`id`';
+            $has_one_where = '`'.$this->table_name().'`.';
             break;
           case 'has_many':
-            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.self::table_name().'`.`id`=`'.$foreign_table.'`.`'.self::table_name().'_id`';
+            $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.$this->table_name().'`.`id`=`'.$foreign_table.'`.`'.$this->table_name().'_id`';
           // case 'has_many_through': // not implemented
           default:  
             # code...
@@ -472,45 +453,45 @@ class BaseModel
       $idin .= ')';
       $where2 = $idin;
     }
-    if(self::$select=='') {
-      self::$select = 'SELECT *'.$select;
+    if($this->select=='') {
+      $this->select = 'SELECT *'.$select;
     }
-    if(self::$select =='' && self::$where=='') {
-      self::$where = ' WHERE '.$where2;
-    } elseif (self::$where != '') {
-      self::$where = ' WHERE '.self::$where;    
+    if($this->select =='' && $this->where=='') {
+      $this->where = ' WHERE '.$where2;
+    } elseif ($this->where != '') {
+      $this->where = ' WHERE '.$this->where;    
     } else {
-      self::$where = $where2;
+      $this->where = $where2;
     }
-    $sql_stub = self::$select.' FROM `'.self::table_name().'`'.$join_sql.self::$where.$limit;
+    $sql_stub = $this->select.' FROM `'.$this->table_name().'`'.$join_sql.$this->where.$limit;
     return array($sql_stub,$where2);
   }
 
-  public static function search($column,$operator,$value,$limit = null) 
+  public function search($column,$operator,$value,$limit = null) 
   { 
-    self::instance();
+    // $this->instance();
     if ($limit!=null) {
       $limit1 = ' LIMIT '.$limit;
     } else {
       $limit1 = '';
     }
-    $sql = "SELECT * FROM ".self::table_name()." WHERE ".$column." ".$operator." '".$value."'".$limit1.";";
-    return self::_getResult($sql);
+    $sql = "SELECT * FROM ".$this->table_name()." WHERE ".$column." ".$operator." '".$value."'".$limit1.";";
+    return $this->getResult($sql);
   }
 
   # Placeholder; Override this within individual models!
-  public static function validate() 
+  public function validate() 
   { 
-    self::instance();
+    // $this->instance();
     return true;
   }
 
-  public static function exists() 
+  public function exists() 
   { 
-    self::instance();
-    if (self::$id!='') {
-      $sql = "SELECT * FROM ".self::table_name()." WHERE id = ".self::$id." LIMIT 1";
-      if (self::$db->fetch($sql)) {
+    // $this->instance();
+    if ($this->id!='') {
+      $sql = "SELECT * FROM ".$this->table_name()." WHERE id = ".$this->id." LIMIT 1";
+      if ($this->db->fetch($sql)) {
         return true;
       } else {
         return false;
@@ -519,52 +500,52 @@ class BaseModel
       return false;
     }
   }
-  protected static function loadPropertiesFromDatabase() 
+  protected function loadPropertiesFromDatabase() 
   { 
-    self::instance();
-    $sql = "SHOW COLUMNS FROM ".self::table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
-    $rs = self::$db->fetch($sql);
+    // $this->instance();
+    $sql = "SHOW COLUMNS FROM ".$this->table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
+    $rs = $this->db->fetch($sql);
     return $rs;
   }
         
-  public static function create() 
+  public function create() 
   {
-    self::instance();
-    $sql = "SHOW COLUMNS FROM ".self::table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
-    self::$record = new StdClass;
-    self::$result = self::$db->fetch( $sql );
-    for ($i=0;$i<count(self::$result);$i++) {
-      $d = (string) self::$result[$i]->Field;
-      self::$record->{$d} = null;
+    // $this->instance();
+    $sql = "SHOW COLUMNS FROM ".$this->table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
+    $this->record = $this;
+    $this->result = $this->db->fetch( $sql );
+    for ($i=0;$i<count($this->result);$i++) {
+      $d = (string) $this->result[$i]->Field;
+      $this->record->{$d} = null;
     }
-    return self::$record;
+    return $this->record;
   }
 
-  public static function save() 
+  public function save() 
   { 
-    self::instance();
+    // $this->instance();
     # Table Name && Created/Updated Fields
-    $table_name = self::table_name();
+    $table_name = $this->table_name();
 
-    $data = self::$record;
+    $data = $this->record;
     $time = date('Y-m-d H:i:s');
-    if (is_array(self::$record)) {
+    if (is_array($this->record)) {
       //existing
-      $data = self::$record[0];
+      $data = $this->record[0];
       $data->updated_at = $time;
       if(isset($data->id)) {
-        self::$id = $data->id;
+        $this->id = $data->id;
       } else {
         // return false;
       }
     } else {
       //new record
-      $data = self::$record;
+      $data = $this->record;
       $data->created_at = $time;
       $data->updated_at = '0000-00-00 00:00:00';
     }
 
-    $properties = self::loadPropertiesFromDatabase();
+    $properties = $this->loadPropertiesFromDatabase();
     # Create SQL Query
     $sql_set_string = '';
     $total_properties_count = count($properties);
@@ -573,36 +554,40 @@ class BaseModel
     foreach ($properties as $k=> $v) {
       $val = $v->Field;
       $type = $v->Type;
-      if(isset($data->$val)) {
+
+      // dd($data->$val);
+      // if(isset($data->$val)) {
         if($data->$val == NULL) {
           $values[] = '';
         } else {
           $values[] = str_replace("`", "``", $data->$val);
         }
         $x++;
-      }
+      // }
     }
     // set the sql statement
     if (count($values)!=$total_properties_count) {
       $total_properties_count = count($values);
     }
+    $x = 0;
     foreach ($properties as $k=> $v) {
       $val = $v->Field;
       $type = $v->Type;
-      if(isset($data->$val)) {
+
+      // if(isset($data->$val)) {
         $sql_set_string .= '`'.$val.'` = ?';
-        if ($x <= $total_properties_count+1) { 
+        if ($x < $total_properties_count-1) { 
           $sql_set_string .= ', '; 
         } else {  
           $sql_set_string .= '';     
         }
         $x++;
-      }
+      // }
     }
 
     # Final SQL Statement
     $sql2 = '`'.$table_name."` SET ".$sql_set_string;
-    if (self::exists()) { 
+    if ($this->exists()) { 
       $final_sql = 'UPDATE '.$sql2.' WHERE `id` = ?;';
       $values[] = $data->id;
     } else { 
@@ -613,10 +598,12 @@ class BaseModel
       return false;
     }
     $q = false;
-    if (self::validate()) {
-      $q = self::$db->execute($final_sql, $values);
+    if ($this->validate()) {
+      $q = $this->db->execute($final_sql, $values);
+      $this->lastId = $this->db->lastId;
     }
-    self::$record = new stdClass;
+      dd($q);
+    // $this->record = new stdClass;
     if ($q) {
       return true;
     } else {
@@ -642,25 +629,25 @@ class BaseModel
       $sql_statement = "SELECT ".$sql." ";
     } else {
       // no sql provided select all
-      self::all();
+      $this->all();
     }
-    self::$select = $sql_statement;
+    $this->select = $sql_statement;
     return $this;
   }
 
   public function where($sql='',$data=null) {
     //set the where sql
-    self::$where = $sql;
-    self::$data = $data;
+    $this->where = $sql;
+    $this->data = $data;
     return $this;
   }
 
   public function get() {
-    $sql = self::_getSql('',self::$data);
-    return self::_getResult($sql[0],self::$data);
+    $sql = $this->_getSql('',$this->data);
+    return $this->getResult($sql[0],$this->data);
   }
 
-  private static function strpos_array($haystack, $needles) 
+  private function strpos_array($haystack, $needles) 
   {
     if (is_array($needles)) {
       foreach ($needles as $str) {
@@ -678,7 +665,7 @@ class BaseModel
     }
   }
 
-  public static function interpolateQuery($query, $params) {
+  public function interpolateQuery($query, $params) {
       $keys = array();
 
       # build a regular expression for each parameter

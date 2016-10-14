@@ -233,6 +233,10 @@ class Router {
 		if (($strpos = strpos($requestUrl, '?')) !== false) {
 			$requestUrl = substr($requestUrl, 0, $strpos);
 		}
+		// Strip anchors from the url
+		// if (($strpos = strpos($requestUrl, '#')) !== false) {
+		// 	$requestUrl = substr($requestUrl, 0, $strpos);
+		// }
 		// set Request Method if it isn't passed as a parameter
 		if ($requestMethod === null) {
 			$requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';

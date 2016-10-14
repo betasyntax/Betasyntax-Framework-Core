@@ -19,8 +19,13 @@ Class Authentication
 
   public function __invoke(Request $request, Response $response, callable $next)
   {
-    if(!$this->isLoggedIn())
+    if(!$this->isLoggedIn()) {
+      // get the previous url and save it in the session
+      app()->session->requestPath = $_SERVER['REQUEST_URI'];
+      // dd($_SERVER['REQUEST_URI']);
+      // die();
       redirect('/login');
+    }
     return $next($request, $response);
   }
 
@@ -29,8 +34,8 @@ Class Authentication
   }
 
   public function authenticate($req) {
-    $user = User::find_by(['email'=>$req['email'],'status'=>'enabled'],1);
-
+    $userModel = new User;
+    $user = $userModel->find_by(['email'=>$req['email'],'status'=>'enabled'],1);
     if(count($user)==1) {
       if(isset($user->email)){
         if (password_verify($req['password'], $user->password)) {

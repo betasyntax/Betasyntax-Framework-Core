@@ -13,21 +13,8 @@ class CoreHelpers
   {
     static::$app = app();
 
-    $wayfinder = new \Twig_SimpleFunction('Wayfinder', function ($slug) {
-      \Betasyntax\Wayfinder::_setSlug($slug);
-      $data = \Betasyntax\Wayfinder::tree(0);
-    });
-
-    $brandingStatus = new \Twig_SimpleFunction('brandingStatus', function () {
-      $x = Setting::search('key_name','=','show_branding',1);
-      for($i=0;$i<count($x);$i++) {
-        $s = $x->value;
-      }
-      return $s;
-    });
-
-    $link_to = new \Twig_SimpleFunction('link_to', function ($text, $route=['/'],$data=[],$attributes=[]) {
-      $url = urlHelper($route,$data);
+    $link_to = new \Twig_SimpleFunction('link_to', function ($text, $route_alias,$data=[],$attributes=[]) {
+      $url = urlHelper($route_alias,$data);
       if(isset($attributes)){
         $cnt='';
         foreach ($attributes as $key => $value) {
@@ -77,7 +64,6 @@ class CoreHelpers
     });
 
     return [
-      'wayfinder'=>$wayfinder,
       'flash'=>$flash,
       'debugBarHead'=>$debugBarHead,
       'debugBarBody'=>$debugBarBody,
