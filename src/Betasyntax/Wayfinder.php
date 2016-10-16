@@ -10,55 +10,76 @@ class Wayfinder
   private static $data = array();
   private static $cnt = 0;
 
-  public static function _setSlug($slug) 
+  public static function setSlug($slug) 
   {
     self::$activePage = $slug;
   }
 
-  public static function _getSlug() 
+  public static function getSlug() 
   {
     return self::$activePage;
   }
     
-  public static function createTreeView($array, $currentParent, $running = false,$id='mainmenu', $currLevel = 0, $prevLevel = -1 ) {
-    if($running) {
-      self::$cnt=0;
+  public static function tree($elements, $parentId = 0)
+  {
+    $branch = array();
+    foreach ($elements as $element) {
+        if ($element['parent_id'] == $parentId) {
+            $children = self::tree($elements, $element['id']);
+            if ($children) {
+                $element['children'] = $children;
+            } else {
+              $element['children'] = null;
+            }
+            $branch[] = $element;
+        }
     }
-    foreach ($array as $categoryId => $category) {
+    return $branch;
+  }
+
+  public static function menuArray($data) {
+    if (count($data)>0) {
+      foreach ($data as $key => $value) {
+        $menuData[$value->id] = array(
+          "id" => $value->id,  
+          "parent_id" => $value->parent_id,  
+          "name" => $value->title, 
+          "url" => $value->url,
+          "type" => $value->type,
+          "status" => $value->status,
+          "slug" => $value->slug
+        );
+      }
+    }
+    return $menuData;
+  }
+
+  public static function buildHtmlTree($menuArray,$ul_class='') { 
+    if($ul_class!='') {
+      $ul_class=' class="'.$ul_class.'"';
+    }
+    $html = '';
+    $active = '';
+    $opt = '';
+    echo '<ul'.$ul_class.'>';
+    foreach($menuArray as $menu) {
+      if($menu['slug']==self::$activePage) {
+        $active = ' class="active"';
+      }
+      if ($menu['type']=='external') {
+        $url='#';
+        $opt = 'onClick="window.open(\''.$menu['url'].'\')"';
+      } else {
+        $url=$menu['url'];
+      }
+      echo '<li'.$active.'>';
       $active = '';
-      $opt = '';
-      if ($currentParent == $category['parent_id']) {  
-        if (self::$activePage == $category['slug'])
-          $active=' class="active"';
-        if ($category['type']=='external') {
-          $url='#';
-          $opt = 'onClick="window.open(\''.$category['url'].'\')"';
-        } else {
-          $url='/'.$category['url'];
-        }
-        if (self::$cnt==0 ) {
-          echo '<ul class='.$id.'>'; 
-        }          
-        if ($currLevel > $prevLevel) {
-          if(self::$cnt !=0)
-            echo "<ul>"; 
-        }
-
-        if ($currLevel == $prevLevel) echo " </li> ";
-
-        echo '<li'.$active.'>';
-        echo '<a href="'.$url.'" '.$opt.'>'.$category['name'].'</a>';
-
-        if ($currLevel > $prevLevel) { 
-          $prevLevel = $currLevel; 
-        }
-        $currLevel++; 
-        self::$cnt++;
-        self::createTreeView ($array, $categoryId, false, $id, $currLevel, $prevLevel);
-        $currLevel--;
-      }   
+      echo '<a href="'.$url.'" '.$opt.'>'.$menu['name'].'</a>';
+      if(is_array($menu['children'])) {
+        self::buildHtmlTree($menu['children']);
+      }
+      echo '</li>';
     }
-    if ($currLevel == $prevLevel) 
-      echo " </li>  </ul> ";
+    echo '</ul>';
   }
 }
