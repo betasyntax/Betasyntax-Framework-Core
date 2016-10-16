@@ -23,6 +23,8 @@ class PdoValueBinder {
             return $value;
         } elseif (is_null($value)) {
             return NULL;
+        } elseif (is_numeric($value)) {
+            return $value;
         } else {
         }
     }

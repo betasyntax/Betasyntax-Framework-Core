@@ -23,7 +23,7 @@ Class ViewProvider
 
   public function loadHelpers()
   {
-    $helpers = new \App\Helpers;
+    $helpers = new \App\ViewHelpers;
     foreach ($helpers::helpers() as $helper => $func) {
       $this->twig->addFunction($func);
     }

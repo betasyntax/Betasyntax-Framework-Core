@@ -182,12 +182,10 @@ class BaseModel
   }
 
   public function __get($key) { 
-    // $this->instance();
     return $this->properties[$key];
   }
   
   public function __set($key, $value) { 
-    // $this->instance();
     return $this->properties[$key] = $value;
   }
 
@@ -233,20 +231,17 @@ class BaseModel
 
   public function raw($sql) 
   {
-    // $this->instance();
     return $this->getResult($sql);
   }
 
   public function exec($sql) 
   {
-    // $this->instance();
     $this->result = $this->db->query($sql);
     return $this->result;
   }
 
   public function all($extra_unsafe_sql = false) 
   { 
-    // $this->instance();
     $sql = "SELECT * FROM ". $this->table_name();
     if ($extra_unsafe_sql) { 
       $sql .= " ".$extra;
@@ -256,7 +251,6 @@ class BaseModel
   }
 
   public function delete($id) {
-    // $this->instance();
     $sql = 'DELETE FROM ' . $this->table_name() . ' WHERE id = ' . $id;
     $q = $this->db->execute($sql);
     if ($q) {
@@ -266,9 +260,8 @@ class BaseModel
     }
   }
 
-  public function find_by($args,$limit='',$join_type='',$foreign_table='') 
+  public function find_by($args, $order_by='', $limit='', $join_type='', $foreign_table='') 
   { 
-    // set the instance
     // $this->instance();
     $type = new PdoValueBinder($this->db->_dbh);
     //loop through find by and get the where statments
@@ -356,14 +349,18 @@ class BaseModel
       // if the just provided a single numeric value send it to find to handle
       return static::find($args,$join_type,$foreign_table);
     }
-    $sql2 = $this->_getSql($join_type,$foreign_table,$sql_where,$limit);  
+    if($limit=='') {
+      $order_by .= ';';
+    }
+
+    $sql2 = $this->_getSql($join_type,$foreign_table,$sql_where,$limit,$order_by);
     $x2 = $this->getResult($sql2[0],$values);
+
     return $x2;
   }
 
   public function find($id,$join_type='',$foreign_table='') 
   { 
-    // $this->instance();
     if(is_array($id)) {
       //we have an array lets use find by instead
       return static::find_by($id,'',$join_type,$foreign_table);
@@ -383,6 +380,7 @@ class BaseModel
     }
     $this->result = $this->db->fetch($sql,$data);
     $this->record = $this->result;
+
     if (count($this->result)==1) {
       return (object) $this->result[0];
     } else {
@@ -390,7 +388,7 @@ class BaseModel
     }
   }
 
-  private function _getSql($join_type='',$foreign_table='',$where='',$limit='')
+  private function _getSql($join_type='', $foreign_table='', $where='', $limit='', $order_by='')
   {
     // holds the join string
     $join_sql = '';
@@ -402,6 +400,11 @@ class BaseModel
     $has_one_where = '';
     // holds the values so we can build a prepared statement
     $values = [];
+    // set the order by
+    if ($order_by!='') {
+      $order_by = 'ORDER BY '.$order_by;
+    }
+
     // set the limit
     if ($limit !='') {
       $limit = ' LIMIT '.$limit.';';
@@ -463,13 +466,12 @@ class BaseModel
     } else {
       $this->where = $where2;
     }
-    $sql_stub = $this->select.' FROM `'.$this->table_name().'`'.$join_sql.$this->where.$limit;
+    $sql_stub = $this->select.' FROM `'.$this->table_name().'`'.$join_sql.$this->where.$order_by.$limit;
     return array($sql_stub,$where2);
   }
 
   public function search($column,$operator,$value,$limit = null) 
   { 
-    // $this->instance();
     if ($limit!=null) {
       $limit1 = ' LIMIT '.$limit;
     } else {
@@ -480,11 +482,7 @@ class BaseModel
   }
 
   # Placeholder; Override this within individual models!
-  public function validate() 
-  { 
-    // $this->instance();
-    return true;
-  }
+  public function validate() {}
 
   public function exists() 
   { 
@@ -502,7 +500,6 @@ class BaseModel
   }
   protected function loadPropertiesFromDatabase() 
   { 
-    // $this->instance();
     $sql = "SHOW COLUMNS FROM ".$this->table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
     $rs = $this->db->fetch($sql);
     return $rs;
@@ -510,7 +507,6 @@ class BaseModel
         
   public function create() 
   {
-    // $this->instance();
     $sql = "SHOW COLUMNS FROM ".$this->table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
     $this->record = $this;
     $this->result = $this->db->fetch( $sql );
@@ -523,7 +519,6 @@ class BaseModel
 
   public function save() 
   { 
-    // $this->instance();
     # Table Name && Created/Updated Fields
     $table_name = $this->table_name();
 
@@ -554,16 +549,12 @@ class BaseModel
     foreach ($properties as $k=> $v) {
       $val = $v->Field;
       $type = $v->Type;
-
-      // dd($data->$val);
-      // if(isset($data->$val)) {
-        if($data->$val == NULL) {
-          $values[] = '';
-        } else {
-          $values[] = str_replace("`", "``", $data->$val);
-        }
-        $x++;
-      // }
+      if($data->$val == NULL) {
+        $values[] = '';
+      } else {
+        $values[] = str_replace("`", "``", $data->$val);
+      }
+      $x++;
     }
     // set the sql statement
     if (count($values)!=$total_properties_count) {
@@ -573,16 +564,13 @@ class BaseModel
     foreach ($properties as $k=> $v) {
       $val = $v->Field;
       $type = $v->Type;
-
-      // if(isset($data->$val)) {
-        $sql_set_string .= '`'.$val.'` = ?';
-        if ($x < $total_properties_count-1) { 
-          $sql_set_string .= ', '; 
-        } else {  
-          $sql_set_string .= '';     
-        }
-        $x++;
-      // }
+      $sql_set_string .= '`'.$val.'` = ?';
+      if ($x < $total_properties_count-1) { 
+        $sql_set_string .= ', '; 
+      } else {  
+        $sql_set_string .= '';     
+      }
+      $x++;
     }
 
     # Final SQL Statement
@@ -602,8 +590,6 @@ class BaseModel
       $q = $this->db->execute($final_sql, $values);
       $this->lastId = $this->db->lastId;
     }
-      dd($q);
-    // $this->record = new stdClass;
     if ($q) {
       return true;
     } else {
@@ -667,20 +653,15 @@ class BaseModel
 
   public function interpolateQuery($query, $params) {
       $keys = array();
-
       # build a regular expression for each parameter
       foreach ($params as $key => $value) {
-          if (is_string($key)) {
-              $keys[] = '/:'.$key.'/';
-          } else {
-              $keys[] = '/[?]/';
-          }
+        if (is_string($key)) {
+          $keys[] = '/:'.$key.'/';
+        } else {
+          $keys[] = '/[?]/';
+        }
       }
-
       $query = preg_replace($keys, $params, $query, 1, $count);
-
-      #trigger_error('replaced '.$count.' keys');
-
       return $query;
   }
 

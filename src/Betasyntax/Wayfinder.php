@@ -10,27 +10,6 @@ class Wayfinder
   private static $data = array();
   private static $cnt = 0;
 
-  public static function getMenu($parent_id,$cat_id = 0)
-  {
-    $model = new Menu;
-    $arrayCategories = array();
-    $sql = "SELECT * FROM menus WHERE status = 'enabled' AND menu_category_id = ".$cat_id." ORDER BY site_order;";
-    $data = $model->raw($sql);
-    if (count($data)>0) {
-      foreach ($data as $key => $value) {
-        $arrayCategories[$value->id] = array(
-          "parent_id" => $value->parent_id, 
-          "name" => $value->title, 
-          "url" => $value->url,
-          "type" => $value->type,
-          "status" => $value->status,
-          "slug" => $value->slug
-        );
-      }
-    }
-    return $arrayCategories;
-  }
-
   public static function _setSlug($slug) 
   {
     self::$activePage = $slug;

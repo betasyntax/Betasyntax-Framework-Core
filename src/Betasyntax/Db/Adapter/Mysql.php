@@ -61,7 +61,6 @@ class Mysql implements AdapterInterface
       $app->debugbar->addCollector(new \Betasyntax\DebugBar\DbCollector());
       $app->pdo_queries[] = [$sql,$queryTime,'test'];
       $app->pdo_records[] = $this->_rec_set;
-      dd($app->pdo_queries);
     }
 
     return $test;

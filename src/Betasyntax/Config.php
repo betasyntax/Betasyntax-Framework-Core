@@ -16,6 +16,5 @@ class Config {
     $this->conf['db'] = Conf::load($basepath.'db.php');
     $this->conf['email'] = Conf::load($basepath.'email.php');
     $this->conf['mounts'] = Conf::load($basepath.'mounts.php');
-    // dd($this->conf);
   }
 }
