@@ -153,7 +153,11 @@ class Router {
 		$this->routes[] = array($method, $route, $target, $name);
 		if($name) {
 			if(isset($this->namedRoutes[$name])) {
-				throw new Exception("Can not redeclare route '{$name}'");
+				if($this->namedRoutes[$name] != '') {
+					throw new Exception("Can not redeclare route '{$name}'");
+				} else {
+					$this->namedRoutes[$name] = $route;
+				}
 			} else {
 				$this->namedRoutes[$name] = $route;
 			}
@@ -219,7 +223,7 @@ class Router {
 	 * @param string $requestMethod
 	 * @return array|boolean Array with route information on success, false on failure (no match).
 	 */
-	public function dispatch(Application $app, $requestUrl = null, $requestMethod = null) 
+	public function dispatch($requestUrl = null, $requestMethod = null) 
 	{
 		$params = array();
 		$match = false;

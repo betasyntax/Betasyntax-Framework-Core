@@ -30,7 +30,7 @@ class BaseModel
    * @var [type]
    */
   public $belongs_to;
-
+  public $table_name;
   public $lastId;
   /**
    * [$has_one description]
@@ -121,11 +121,6 @@ class BaseModel
    */
   protected $info;
 
-  /**
-   * Statements cache
-   * @var array
-   */
-  protected $table_name = '';
 
   /**
    * [$statement description]
@@ -218,6 +213,9 @@ class BaseModel
   public function table_name() 
   {
     $class = get_called_class();
+    if($class=="Model") {
+      $class = $this->table_name;
+    }
     $vowels = array('a','e','i','o');
     if ($class[strlen($class)-1]=='y' ) {
       $class = str_replace('y', 'ies', $class);
@@ -262,7 +260,6 @@ class BaseModel
 
   public function find_by($args, $order_by='', $limit='', $join_type='', $foreign_table='') 
   { 
-    // $this->instance();
     $type = new PdoValueBinder($this->db->_dbh);
     //loop through find by and get the where statments
     if (isset($args) && is_array($args)) {
@@ -352,10 +349,8 @@ class BaseModel
     if($limit=='') {
       $order_by .= ';';
     }
-
-    $sql2 = $this->_getSql($join_type,$foreign_table,$sql_where,$limit,$order_by);
+    $sql2 = $this->_getSql($join_type,$order_by,$foreign_table,$sql_where,$limit);
     $x2 = $this->getResult($sql2[0],$values);
-
     return $x2;
   }
 
@@ -366,7 +361,7 @@ class BaseModel
       return static::find_by($id,'',$join_type,$foreign_table);
     } elseif(is_numeric($id)) {
       $where = ' WHERE '.$this->table_name().'.id = ?';
-      $sql = $this->_getSql($join_type,$foreign_table,$where);
+      $sql = $this->_getSql($join_type,'',$foreign_table,$where);
       return $this->getResult($sql[0],array($id));
     } else {
       return null;
@@ -388,9 +383,8 @@ class BaseModel
     }
   }
 
-  private function _getSql($join_type='', $foreign_table='', $where='', $limit='', $order_by='')
+  private function _getSql($join_type='', $order_by='', $foreign_table='', $where='', $limit='')
   {
-    // holds the join string
     $join_sql = '';
     $join_sql2 = '';
     $where2 = $where;
@@ -402,9 +396,8 @@ class BaseModel
     $values = [];
     // set the order by
     if ($order_by!='') {
-      $order_by = 'ORDER BY '.$order_by;
+      $order_by = ' ORDER BY '.$order_by;
     }
-
     // set the limit
     if ($limit !='') {
       $limit = ' LIMIT '.$limit.';';
@@ -442,6 +435,7 @@ class BaseModel
         }       
       }
     }
+
     // find() function
     if (is_array($where)) {
       $c = count($where);
@@ -629,7 +623,7 @@ class BaseModel
   }
 
   public function get() {
-    $sql = $this->_getSql('',$this->data);
+    $sql = $this->_getSql('','',$this->data);
     return $this->getResult($sql[0],$this->data);
   }
 
