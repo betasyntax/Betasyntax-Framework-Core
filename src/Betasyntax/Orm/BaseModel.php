@@ -77,24 +77,12 @@ class BaseModel
   // protected $record;
   protected $record;
 
-  /**
-   * [$d description]
-   * @var [type]
-   */
-  protected $d;
 
   /**
    * [$d description]
    * @var [type]
    */
-  protected $properties = array();
-
-  /* Static instances */
-  /**
-   * Multiton instances
-   * @var array
-   */
-  protected $instance  = array();
+  public $properties = array();
 
   /**
    * [$arguments description]
@@ -144,7 +132,7 @@ class BaseModel
    * [$id description]
    * @var [type]
    */
-  protected $id;
+  // protected $id;
 
   /**
    * Primary keys information cache
@@ -200,15 +188,15 @@ class BaseModel
     }
   }
 
-  public function safe_exception (Exception $exception) 
-  {
-    die('Uncaught exception: '.$exception->getMessage());
-  }
-
   public function __toString () 
   {
     return $this->result ? $this->result->queryString : null;
   }  
+
+  public function safe_exception (Exception $exception) 
+  {
+    die('Uncaught exception: '.$exception->getMessage());
+  }
 
   public function table_name() 
   {
@@ -232,9 +220,9 @@ class BaseModel
     return $this->getResult($sql);
   }
 
-  public function exec($sql) 
+  public function exec($sql,$data=array()) 
   {
-    $this->result = $this->db->query($sql);
+    $this->result = $this->db->fetch($sql);
     return $this->result;
   }
 
@@ -249,12 +237,27 @@ class BaseModel
   }
 
   public function delete($id) {
-    $sql = 'DELETE FROM ' . $this->table_name() . ' WHERE id = ' . $id;
-    $q = $this->db->execute($sql);
+    $sql = 'DELETE FROM ' . $this->table_name() . ' WHERE id = ?';
+    $q = $this->db->execute($sql,array($id));
     if ($q) {
       return true;
     } else {
       return false;
+    }
+  }
+
+  public function find($id,$join_type='',$foreign_table='') 
+  { 
+
+    if(is_array($id)) {
+      //we have an array lets use find by instead
+      return $this->find_by($id,'',$join_type,$foreign_table);
+    } elseif(is_numeric($id)) {
+      $where = ' WHERE '.$this->table_name().'.id = ?';
+      $sql = $this->getSql($join_type,'',$foreign_table,$where);
+      return $this->getResult($sql[0],array($id));
+    } else {
+      return null;
     }
   }
 
@@ -335,6 +338,9 @@ class BaseModel
               $values[] = $type->type($args[$i]);
             }
           }
+          if($order_by = '') {
+
+          }
           $sql_where .= $this->table_name().'.id IN ('.$where;
         }
         $sql_where = ' WHERE '.$sql_where;
@@ -344,28 +350,15 @@ class BaseModel
       }
     } else {
       // if the just provided a single numeric value send it to find to handle
-      return static::find($args,$join_type,$foreign_table);
+      return $this->find($args,$join_type,$foreign_table);
     }
     if($limit=='') {
       $order_by .= ';';
     }
-    $sql2 = $this->_getSql($join_type,$order_by,$foreign_table,$sql_where,$limit);
+    $sql2 = $this->getSql($join_type,$order_by,$foreign_table,$sql_where,$limit);
+    // dd($sql2[0]);
     $x2 = $this->getResult($sql2[0],$values);
     return $x2;
-  }
-
-  public function find($id,$join_type='',$foreign_table='') 
-  { 
-    if(is_array($id)) {
-      //we have an array lets use find by instead
-      return static::find_by($id,'',$join_type,$foreign_table);
-    } elseif(is_numeric($id)) {
-      $where = ' WHERE '.$this->table_name().'.id = ?';
-      $sql = $this->_getSql($join_type,'',$foreign_table,$where);
-      return $this->getResult($sql[0],array($id));
-    } else {
-      return null;
-    }
   }
 
   private function getResult($sql,$data=null)
@@ -373,17 +366,21 @@ class BaseModel
     if(count($this->data)!=0) {
       $data = $this->data;
     }
-    $this->result = $this->db->fetch($sql,$data);
-    $this->record = $this->result;
-
-    if (count($this->result)==1) {
-      return (object) $this->result[0];
+    $result = $this->db->fetch($sql,$data);
+    if (count($result)==1) {
+      // we have a single row so we want to include each element to this object dynamically
+      // $this->record = $result;
+      foreach (((array) $result[0]) as $key => $value) {
+        // uses the magic method to set and get variables from the properties array
+        $this->$key = $value;
+      }
+      return $this;
     } else {
-      return $this->result;
+      return $result;
     }
   }
 
-  private function _getSql($join_type='', $order_by='', $foreign_table='', $where='', $limit='')
+  private function getSql($join_type='', $order_by='', $foreign_table='', $where='', $limit='')
   {
     $join_sql = '';
     $join_sql2 = '';
@@ -395,8 +392,10 @@ class BaseModel
     // holds the values so we can build a prepared statement
     $values = [];
     // set the order by
-    if ($order_by!='') {
+    if ($order_by!='' && $order_by !=';') {
       $order_by = ' ORDER BY '.$order_by;
+    } else {
+      $order_by = $order_by;
     }
     // set the limit
     if ($limit !='') {
@@ -460,6 +459,9 @@ class BaseModel
     } else {
       $this->where = $where2;
     }
+    if($order_by =='') {
+      $order_by = ';';
+    }
     $sql_stub = $this->select.' FROM `'.$this->table_name().'`'.$join_sql.$this->where.$order_by.$limit;
     return array($sql_stub,$where2);
   }
@@ -481,7 +483,7 @@ class BaseModel
   public function exists() 
   { 
     // $this->instance();
-    if ($this->id!='') {
+    if (isset($this->id) && $this->id !='') {
       $sql = "SELECT * FROM ".$this->table_name()." WHERE id = ".$this->id." LIMIT 1";
       if ($this->db->fetch($sql)) {
         return true;
@@ -515,25 +517,20 @@ class BaseModel
   { 
     # Table Name && Created/Updated Fields
     $table_name = $this->table_name();
-
-    $data = $this->record;
+    $data = (object) $this->properties;
     $time = date('Y-m-d H:i:s');
-    if (is_array($this->record)) {
-      //existing
-      $data = $this->record[0];
+    if (property_exists($data, 'id')) {
+      //update time data
       $data->updated_at = $time;
-      if(isset($data->id)) {
-        $this->id = $data->id;
-      } else {
-        // return false;
-      }
+      $this->id= $data->id;
     } else {
       //new record
       $data = $this->record;
-      $data->created_at = $time;
-      $data->updated_at = '0000-00-00 00:00:00';
+      $data->created_at = 'NOW()';
+      $data->updated_at = '';
     }
-
+// 
+    // dd($data);
     $properties = $this->loadPropertiesFromDatabase();
     # Create SQL Query
     $sql_set_string = '';
@@ -569,21 +566,22 @@ class BaseModel
 
     # Final SQL Statement
     $sql2 = '`'.$table_name."` SET ".$sql_set_string;
-    if ($this->exists()) { 
+    if (property_exists($data, 'id')) { 
       $final_sql = 'UPDATE '.$sql2.' WHERE `id` = ?;';
       $values[] = $data->id;
     } else { 
       $final_sql = "INSERT INTO ".$sql2.';';
     }
-
+    // dd($final_sql);
     if (static::validate() === false) {
       return false;
     }
     $q = false;
-    if ($this->validate()) {
+    // if ($this->validate()) {
+      // dd('test');
       $q = $this->db->execute($final_sql, $values);
       $this->lastId = $this->db->lastId;
-    }
+    // }
     if ($q) {
       return true;
     } else {
@@ -623,7 +621,7 @@ class BaseModel
   }
 
   public function get() {
-    $sql = $this->_getSql('','',$this->data);
+    $sql = $this->getSql('','',$this->data);
     return $this->getResult($sql[0],$this->data);
   }
 
