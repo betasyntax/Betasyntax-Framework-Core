@@ -51,7 +51,7 @@ class Wayfinder
       SELECT node.*,node.title, (COUNT(parent.title) - 1) AS depth
       FROM menus AS node,
         menus AS parent
-      WHERE node.lft BETWEEN parent.lft AND parent.rgt AND parent.menu_id = 0 AND node.menu_id = 0 AND node.status = 'enabled' 
+      WHERE node.lft BETWEEN parent.lft AND parent.rgt AND parent.menu_id = 1 AND node.menu_id = 1 AND node.status = 'enabled' 
       GROUP BY node.title, node.id 
       ORDER BY node.lft;      
     ";
