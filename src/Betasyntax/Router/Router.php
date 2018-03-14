@@ -347,9 +347,14 @@ class Router {
 				  //get the request array
 				if (defined('PHPUNIT_BETASYNTAX_TESTSUITE') == true) { 
 					$requestMethod = $requestMethod;
-				} else {
-			  		$requestMethod = $_SERVER['REQUEST_METHOD'];
 				}
+				// } else {
+				// 	if($requestMethod === null) {
+			 //  			$requestMethod = $_SERVER['REQUEST_METHOD'];	
+				// 	} else {
+				// 		$requestMethod = $_SERVER['REQUEST_METHOD'];
+				// 	}
+				// }
 			  	//instantiate our request and response for Relay
 			  	$request = new Request($requestMethod,$requestUrl);
 			  	$response = new Response;

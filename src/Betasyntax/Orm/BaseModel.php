@@ -217,7 +217,17 @@ class BaseModel
 
   public function raw($sql) 
   {
-    return $this->getResult($sql);
+    return $this->db->fetch($sql);
+  }
+
+  public function query($sql) 
+  {
+    return $this->db->query($sql);
+  }
+  
+  public function lastId() {
+    $data = $this->raw('SELECT LAST_INSERT_ID() as lastId;');
+    return $data[0]->lastId;
   }
 
   public function exec($sql,$data=array()) 
@@ -497,6 +507,7 @@ class BaseModel
   protected function loadPropertiesFromDatabase() 
   { 
     $sql = "SHOW COLUMNS FROM ".$this->table_name()." WHERE EXTRA NOT LIKE '%auto_increment%'";
+    // echo $sql;
     $rs = $this->db->fetch($sql);
     return $rs;
   }
@@ -530,8 +541,8 @@ class BaseModel
       $data->updated_at = '';
     }
 // 
-    // dd($data);
     $properties = $this->loadPropertiesFromDatabase();
+    // dd($this->loadPropertiesFromDatabase());
     # Create SQL Query
     $sql_set_string = '';
     $total_properties_count = count($properties);
@@ -548,8 +559,10 @@ class BaseModel
       $x++;
     }
     // set the sql statement
-    if (count($values)!=$total_properties_count) {
-      $total_properties_count = count($values);
+    if(isset($values)) {
+      if (count($values)!=$total_properties_count) {
+        $total_properties_count = count($values);
+      }
     }
     $x = 0;
     foreach ($properties as $k=> $v) {

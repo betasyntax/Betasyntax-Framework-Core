@@ -35,24 +35,6 @@ class Mysql implements AdapterInterface
     $test = $sth->execute($data);
     $sth->setFetchMode(PDO::FETCH_OBJ);
     $this->_rec_set = $sth->fetchAll();
-    if( ! $app->isProd()) {
-      $end = microtime(true);
-      $difference = $end - $started;
-      $queryTime = number_format($difference, 10);
-      $app->debugbar->addCollector(new \Betasyntax\DebugBar\DbCollector());
-      $app->pdo_queries[] = [$sql,$queryTime,'test'];
-      $app->pdo_records[] = $this->_rec_set;
-    }
-    return $this->_rec_set;  
-  }
-  public function execute($sql,$data)
-  {
-    $app = app();
-    $started = microtime(true);
-    $sth = $this->_dbh->prepare($sql);
-
-    $test = $sth->execute($data);
-
     $this->lastId = $this->_dbh->lastInsertId();
     if( ! $app->isProd()) {
       $end = microtime(true);
@@ -63,8 +45,42 @@ class Mysql implements AdapterInterface
       $app->pdo_records[] = $this->_rec_set;
     }
 
-    return $test;
+    return $this->_rec_set;  
   }
+
+  public function query($sql)
+  {
+    echo $sql;
+    echo $this->_dbh->exec($sql);
+    dd($this->_dbh->errorInfo());
+  }
+
+  public function execute($sql,$data)
+  {
+    try {
+      $app = app();
+      $started = microtime(true);
+      $this->_dbh->beginTransaction(); 
+      $sth = $this->_dbh->prepare($sql);
+      $data = $sth->execute($data);
+      $this->lastId = $this->_dbh->lastInsertId();
+      $this->_dbh->commit(); 
+      if( ! $app->isProd()) {
+        $end = microtime(true);
+        $difference = $end - $started;
+        $queryTime = number_format($difference, 10);
+        $app->debugbar->addCollector(new \Betasyntax\DebugBar\DbCollector());
+        $app->pdo_queries[] = [$sql,$queryTime,'test'];
+        $app->pdo_records[] = $this->_rec_set;
+      }
+
+      return true;
+    } catch(PDOExecption $e) { 
+      $this->_dbh->rollback(); 
+      return "Error!: " . $e->getMessage() . "</br>";
+    }
+  }
+
   public function columnMeta() 
   { 
     return $this->_dbh->getColumnMeta(0);
