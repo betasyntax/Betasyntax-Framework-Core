@@ -122,6 +122,7 @@ class Wayfinder
         $result .='</ul>';
       }
     }
+    $result .='</ul>';
     echo $result;
   }
 
