@@ -271,6 +271,12 @@ class BaseModel
     }
   }
 
+  public function read($id,$join_type='',$foreign_table='')
+  {
+    $x = $this->find($id, $join_type, $foreign_table);
+    return $x->properties;
+  }
+
   public function find_by($args, $order_by='', $limit='', $join_type='', $foreign_table='') 
   { 
     $type = new PdoValueBinder($this->db->_dbh);
@@ -429,7 +435,7 @@ class BaseModel
           case 'has_one':
             $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.$this->table_name().'`.`id`=`'.$foreign_table.'`.`'.$this->table_name().'_id`';
             // $where = '`'.$this->table_name().'`.`id` = '.$where;
-            $where2 = '`'.$this->table_name().'`.`id` = ?';
+            $where2 = ' WHERE `'.$this->table_name().'`.`id` = ?';
             break;
           case 'belongs_to':
             $join_sql .= ' LEFT OUTER JOIN `'.$foreign_table.'` ON `'.$this->table_name().'`.`'.$foreign_table.'_id`=`'.$foreign_table.'`.`id`';
@@ -523,7 +529,12 @@ class BaseModel
     }
     return $this->record;
   }
-
+  public function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+  }
   public function save() 
   { 
     # Table Name && Created/Updated Fields
@@ -580,8 +591,12 @@ class BaseModel
     # Final SQL Statement
     $sql2 = '`'.$table_name."` SET ".$sql_set_string;
     if (property_exists($data, 'id')) { 
-      $final_sql = 'UPDATE '.$sql2.' WHERE `id` = ?;';
-      $values[] = $data->id;
+      if($data->id==null) {
+        $final_sql = "INSERT INTO ".$sql2.';';
+      } else {
+        $final_sql = 'UPDATE '.$sql2.' WHERE `id` = ?;';
+        $values[] = $data->id; 
+      }
     } else { 
       $final_sql = "INSERT INTO ".$sql2.';';
     }

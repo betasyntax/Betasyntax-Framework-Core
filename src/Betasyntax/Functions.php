@@ -106,10 +106,9 @@ if (!function_exists('dd'))
    */
   function dd($data)
   {
-    // echo app()->util->dd($data);
-    echo '<pre class="var_dump">';
+    printf("\n<pre class='var_dump'>\n");
     var_dump($data);
-    echo '</pre>';
+    printf("\n</pre>\n");
   }
 }
 

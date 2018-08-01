@@ -43,7 +43,7 @@ class Wayfinder
     return self::$ul_class;
   }
 
-  public static function buildHtmlTree($slug,$menu_id,$ul_class='') { 
+  public static function buildHtmlTree($slug, $menu_id=1, $ul_class='navbar-nav mr-auto', $li_class='nav-item', $a_link='nav-link') { 
     self::setSlug($slug);
     self::setMenuId($menu_id);
     self::setUlClass($ul_class);
@@ -94,7 +94,7 @@ class Wayfinder
       }
       if ($currNode->depth > $currDepth || $index == 0) {
           if ($cnt == 0) {
-            $result .= '<ul class="' . $ul_class . '" data-id="'.$currNode->id.'">';
+            $result .= '<ul class="'.$ul_class.'" data-id="'.$currNode->id.'">';
           } else {
             // if(self::$status==1 && $currNode->hidden == 0)
             $result .= '<ul data-id="'.$currNode->id.' '.$hiddenDepth.'">';
@@ -108,8 +108,14 @@ class Wayfinder
           $result .= str_repeat('</ul></li>', $currDepth - $currNode->depth);
         }
       }
+      $icon = '';
+      $title = $currNode->title;
+      if($currNode->icon!='') {
+        $icon = '<span class="icon">'.$currNode->icon.'</span>';
+        $title = '<span class="title">'.$currNode->title.'</span>';
+      }
       if(self::$status==1 && $currNode->hidden == 0 && $currNode->status == 'enabled') {
-        $result .= '<li data-id="'.$currNode->id.' '.$hiddenDepth.'"><a href="'.$currNode->url.'" class="'.$active.'" '.$target.'>'.$currNode->title.'</a>';
+        $result .= '<li class="'.$li_class.' '.$active.'" data-id="'.$currNode->id.' '.$hiddenDepth.'"><a href="'.$currNode->url.'" class="'.$a_link.'" '.$target.'>'.$icon.$title.'</a>';
         // Check if there's chidren
         if ($index != $lastNodeIndex && $tree[$index + 1]->depth <= $tree[$index]->depth) {
             $result .= '</li>'; // If not, close the <li>
@@ -204,13 +210,13 @@ class Wayfinder
       $result .= '<div class="dd-handle dd3-handle">Drag</div>';
       $result .= '<div class="dd3-content'.$bold.$italics.'"><span id="node-'.$currNode->id.'" class="menu-title-txt">'.$currNode->title.'</span>';
       $result .= '<span id="node-input-'.$currNode->id.'" class="menu-title"><input id="title-'.$currNode->id.'" value="'.$currNode->title.'" />';
-      $result .= '<div class="checkmark fa fa-check"></div><div class="cancel fa fa-times"></div></span>';
+      $result .= '<div class="checkmark fas fa-check"></div><div class="cancel fas fa-times"></div></span>';
       $result .= '<span id="menu-url-'.$currNode->id.'" class="menu-url"> ('.$url.')</span>';
       $result .= '<span id="node-url-'.$currNode->id.'" class="menu-url-text"><input id="url-'.$currNode->id.'" value="'.$url.'" />';
-      $result .= '<div class="checkmark1 fa fa-check"></div><div class="cancel1 fa fa-times"></div></span>';
-      $result .= '<div class="edit-options fa fa-pencil"></div>';
-      $result .= '<div class="hidden-options fa fa-eye'.$hidden.'"></div>';
-      $result .= '<div class="status-options fa fa-'.$status.'"></div></div>';
+      $result .= '<div class="checkmark1 fas fa-check"></div><div class="cancel1 fas fa-times"></div></span>';
+      $result .= '<div class="edit-options fas fa-edit"></div>';
+      $result .= '<div class="hidden-options fas fa-eye'.$hidden.'"></div>';
+      $result .= '<div class="status-options fas fa-'.$status.'"></div></div>';
       // Check if there's chidren
       if ($index != $lastNodeIndex && $tree[$index + 1]->depth <= $tree[$index]->depth) {
           $result .= '</li>'; // If not, close the <li>
