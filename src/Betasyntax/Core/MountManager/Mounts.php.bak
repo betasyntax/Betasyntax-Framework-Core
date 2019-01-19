@@ -46,10 +46,8 @@ Class Mounts
         if($key=='mount')
           $mount = $val;
         if($key='=file') {
-          if(is_array($val)) {
-            if(count($val)>0) {
-              $file = $val;
-            }
+          if(count($val)>0) {
+            $file = $val;
           }
         }
         if($key=='dir') {

@@ -605,6 +605,8 @@ class BaseModel
       return false;
     }
     $q = false;
+    // dd($final_sql);
+    // dd($values);
     // if ($this->validate()) {
       // dd('test');
       $q = $this->db->execute($final_sql, $values);
